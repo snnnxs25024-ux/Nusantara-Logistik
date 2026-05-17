@@ -1,0 +1,8 @@
+{
+  "name": "Nusantara Logistik Perdana",
+  "description": "Solusi Export Import & Logistik Global Terpercaya",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
