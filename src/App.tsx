@@ -521,7 +521,7 @@ const Insights = () => {
                    <h4 className="font-bold text-charcoal mb-1">{t.insights.chart1Title}</h4>
                    <p className="text-sm text-gray-500 font-light">{t.insights.chart1Subtitle}</p>
                  </div>
-                 <span className="bg-brand-yellow font-bold text-xs py-1 px-3 text-white rounded-sm">2024</span>
+                 <span className="bg-brand-yellow font-bold text-xs py-1 px-3 text-white rounded-sm">2026</span>
                </div>
                
                <div className="h-64 w-full relative -ml-4">
