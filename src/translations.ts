@@ -14,6 +14,19 @@ export const translations = {
       consultation: "Konsultasi",
       consultationNow: "Konsultasi Sekarang"
     },
+    tracking: {
+      title: "Lacak Pengiriman",
+      desc: "Masukkan nomor resi (AWB/BL) untuk melihat status pengiriman.",
+      placeholder: "Contoh: NLP-8823901",
+      status: "Status Aktif",
+      inTransit: "Sedang Dikirim (In Transit)",
+      awb: "No. Resi",
+      notFound: "Nomor resi tidak ditemukan. Silakan periksa kembali nomor Anda.",
+      step1: "Penerimaan Barang",
+      step2: "Customs Clearance",
+      step3: "Dalam Perjalanan Kapal",
+      step4: "Tiba di Gudang Tujuan"
+    },
     hero: {
       badge: "Global Supply Chain",
       title1: "Solusi Export Import &",
@@ -47,12 +60,18 @@ export const translations = {
     },
     insights: {
       badge: "Business Insights",
-      title: "Kinerja Berbasis Data",
-      desc: "Kami memonitor setiap pergerakan kargo secara presisi. Transparansi data operasional memberikan kepercayaan bagi mitra kami bahwa distribusi barang ditangani dengan standar enterprise.",
-      accuracy: "Akurasi Pengiriman",
-      capacity: "Kapasitas Distribusi (Tonase)",
-      distribution: "Distribusi Wilayah Tujuan",
-      routes: ["Asia Pasifik", "Eropa", "Timur Tengah", "Amerika"]
+      title: "Performa Operasional & Pertumbuhan Bisnis",
+      desc: "Data agregat dari operasional pengiriman, kapasitas distribusi, dan jaringan mitra global selama 12 bulan terakhir.",
+      stats: [
+        { label: "JUMLAH PENGIRIMAN", value: "144.520", trend: "+18,4%" },
+        { label: "NEGARA TUJUAN", value: "82", trend: "+6 negara" },
+        { label: "KAPASITAS DISTRIBUSI", value: "260K TEU", trend: "+12,1%" },
+        { label: "MITRA LOGISTIK", value: "350+", trend: "Aktif" }
+      ],
+      chart1Title: "Pertumbuhan Pengiriman",
+      chart1Subtitle: "Volume bulanan (kontainer)",
+      chart2Title: "Top Negara Tujuan",
+      chart2Subtitle: "Volume YTD per negara",
     },
     network: {
       badge: "Jaringan Global",
@@ -102,6 +121,19 @@ export const translations = {
       consultation: "Consultation",
       consultationNow: "Consultation Now"
     },
+    tracking: {
+      title: "Track Shipment",
+      desc: "Enter your tracking number (AWB/BL) to view the shipping status.",
+      placeholder: "Example: NLP-8823901",
+      status: "Active Status",
+      inTransit: "In Transit",
+      awb: "Tracking No.",
+      notFound: "Tracking number not found. Please verify your number.",
+      step1: "Cargo Receipt",
+      step2: "Customs Clearance",
+      step3: "In Transit (Vessel)",
+      step4: "Arrived at Destination"
+    },
     hero: {
       badge: "Global Supply Chain",
       title1: "Export Import &",
@@ -135,12 +167,18 @@ export const translations = {
     },
     insights: {
       badge: "Business Insights",
-      title: "Data-Driven Performance",
-      desc: "We precisely monitor every movement of cargo. Transparency in operational data provides trust for our partners that distribution is handled by enterprise standards.",
-      accuracy: "Shipping Accuracy",
-      capacity: "Distribution Capacity (Tonnage)",
-      distribution: "Destination Region Distribution",
-      routes: ["Asia Pacific", "Europe", "Middle East", "Americas"]
+      title: "Operational Performance & Business Growth",
+      desc: "Aggregated data from shipping operations, distribution capacity, and global partner network over the past 12 months.",
+      stats: [
+        { label: "TOTAL SHIPMENTS", value: "144,520", trend: "+18.4%" },
+        { label: "DESTINATION COUNTRIES", value: "82", trend: "+6 countries" },
+        { label: "DISTRIBUTION CAPACITY", value: "260K TEU", trend: "+12.1%" },
+        { label: "LOGISTICS PARTNERS", value: "350+", trend: "Active" }
+      ],
+      chart1Title: "Shipment Growth",
+      chart1Subtitle: "Monthly volume (containers)",
+      chart2Title: "Top Destination Countries",
+      chart2Subtitle: "YTD volume per country",
     },
     network: {
       badge: "Global Network",

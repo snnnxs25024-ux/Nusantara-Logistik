@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Ship, Plane, Package, Truck, Globe, ShieldCheck, Clock, 
-  MapPin, Menu, X, ArrowRight, BarChart3, Users, Building, ChevronRight, Anchor, ChevronDown
+  MapPin, Menu, X, ArrowRight, BarChart3, Users, Building, ChevronRight, Anchor, ChevronDown, Search, CheckCircle2, Clock3
 } from 'lucide-react';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
@@ -14,19 +14,18 @@ import { Language } from './translations';
 
 // --- DATA ---
 const deliveryData = [
-  { name: 'Jan', TEU: 4000 },
-  { name: 'Feb', TEU: 3000 },
-  { name: 'Mar', TEU: 5000 },
-  { name: 'Apr', TEU: 4500 },
-  { name: 'Mei', TEU: 6000 },
-  { name: 'Jun', TEU: 7500 },
-];
-
-const routeData = [
-  { name: 'Asia Pasifik', volume: 85 },
-  { name: 'Eropa', volume: 65 },
-  { name: 'Timur Tengah', volume: 45 },
-  { name: 'Amerika', volume: 30 },
+  { name: 'Jan', TEU: 800 },
+  { name: 'Feb', TEU: 900 },
+  { name: 'Mar', TEU: 900 },
+  { name: 'Apr', TEU: 1100 },
+  { name: 'Mei', TEU: 1250 },
+  { name: 'Jun', TEU: 1300 },
+  { name: 'Jul', TEU: 1400 },
+  { name: 'Agu', TEU: 1400 },
+  { name: 'Sep', TEU: 1550 },
+  { name: 'Okt', TEU: 1650 },
+  { name: 'Nov', TEU: 1750 },
+  { name: 'Des', TEU: 1800 },
 ];
 
 // --- COMPONENTS ---
@@ -220,14 +219,129 @@ const Navbar = () => {
 };
 
 // 3. Hero Section
+const TrackingWidget = () => {
+  const { t } = useLanguage();
+  const [trackingNumber, setTrackingNumber] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchResult, setSearchResult] = useState<null | 'found' | 'not_found'>(null);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!trackingNumber.trim()) return;
+    
+    setIsSearching(true);
+    // Mock simulation
+    setTimeout(() => {
+      setIsSearching(false);
+      if (trackingNumber.length > 5) {
+        setSearchResult('found');
+      } else {
+        setSearchResult('not_found');
+      }
+    }, 1500);
+  };
+
+  const steps = [
+    { label: t.tracking.step1, date: "12 May 2026", active: true, completed: true },
+    { label: t.tracking.step2, date: "13 May 2026", active: true, completed: true },
+    { label: t.tracking.step3, date: "14 May 2026", active: true, completed: false },
+    { label: t.tracking.step4, date: "Pending", active: false, completed: false }
+  ];
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, delay: 0.4 }}
+      className="bg-white p-5 md:p-6 lg:p-8 shadow-xl border-t-4 border-brand-yellow w-full rounded-sm relative z-30"
+    >
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 lg:gap-8">
+        <div className="md:w-5/12 lg:w-1/2">
+          <h3 className="text-xl font-bold text-charcoal mb-1">{t.tracking.title}</h3>
+          <p className="text-sm text-gray-500 font-light leading-relaxed mb-0">{t.tracking.desc}</p>
+        </div>
+        
+        <form onSubmit={handleSearch} className="relative md:w-7/12 lg:w-1/2 w-full">
+          <div className="flex shadow-sm rounded-sm overflow-hidden flex-col sm:flex-row border border-gray-100">
+            <input 
+              type="text" 
+              placeholder={t.tracking.placeholder}
+              value={trackingNumber}
+              onChange={(e) => setTrackingNumber(e.target.value)}
+              className="w-full bg-soft-gray hover:bg-gray-100/50 px-4 py-3 focus:outline-none focus:bg-white focus:border-brand-yellow focus:ring-1 focus:ring-brand-yellow transition-colors placeholder:text-gray-400 text-charcoal text-sm"
+            />
+            <button 
+              type="submit" 
+              disabled={isSearching}
+              className="px-6 py-3 sm:py-0 bg-brand-yellow hover:bg-brand-yellow-hover text-white transition-colors flex items-center justify-center disabled:opacity-80 font-medium text-sm"
+              aria-label="Search"
+            >
+              {isSearching ? <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : <Search className="w-5 h-5" />}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* Render Results */}
+      {searchResult === 'found' && (
+        <div className="mt-8 border-t border-gray-100 pt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+           <div className="flex items-center justify-between mb-8">
+             <div>
+               <span className="text-xs text-brand-yellow font-bold uppercase tracking-widest block mb-1">{t.tracking.status}</span>
+               <h4 className="font-bold text-lg text-charcoal">{t.tracking.inTransit}</h4>
+             </div>
+             <div className="text-right">
+               <span className="text-xs text-gray-400 font-bold uppercase tracking-widest block mb-1">{t.tracking.awb}</span>
+               <h4 className="font-mono text-lg font-semibold text-gray-700">{trackingNumber}</h4>
+             </div>
+           </div>
+
+           <div className="relative">
+              {/* Horizontal line for desktop, vertical line for mobile */}
+              <div className="absolute left-[15px] top-4 bottom-4 w-px bg-gray-200 md:w-auto md:h-px md:left-[50px] md:right-[50px] md:top-[15px] md:bottom-auto z-0"></div>
+              
+              <div className="flex flex-col md:flex-row justify-between gap-8 md:gap-4 relative z-10">
+                {steps.map((step, idx) => (
+                  <div key={idx} className="relative flex md:flex-col items-start md:items-center gap-4 md:gap-4 flex-1">
+                     <div className={cn(
+                       "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center border-2 bg-white transition-colors",
+                       step.completed ? "border-brand-yellow text-brand-yellow" : 
+                       step.active ? "border-brand-yellow border-dashed" : "border-gray-200 text-gray-200"
+                     )}>
+                       {step.completed ? <CheckCircle2 className="w-4 h-4" /> : <div className={cn("w-2 h-2 rounded-full", step.active ? "bg-brand-yellow animate-pulse" : "bg-gray-200")} />}
+                     </div>
+                     <div className="md:text-center mt-0.5 md:mt-0">
+                       <p className={cn("text-sm font-bold mb-1", step.active ? "text-charcoal" : "text-gray-400")}>{step.label}</p>
+                       <p className="text-xs text-gray-500 font-medium flex items-center md:justify-center gap-1.5 uppercase tracking-wider">
+                         <Clock3 className="w-3.5 h-3.5" /> {step.date}
+                       </p>
+                     </div>
+                  </div>
+                ))}
+              </div>
+           </div>
+        </div>
+      )}
+
+      {searchResult === 'not_found' && (
+        <div className="mt-8 border-t border-gray-100 pt-8 text-center bg-red-50/50 rounded-sm pb-6">
+          <p className="text-base text-red-600 font-bold mb-2">Error</p>
+          <p className="text-sm text-gray-600">{t.tracking.notFound}</p>
+        </div>
+      )}
+
+    </motion.div>
+  );
+};
+
 const Hero = () => {
   const { t } = useLanguage();
   return (
-    <section id="beranda" className="relative pt-24 pb-12 md:pt-28 md:pb-16 min-h-[85vh] flex items-center overflow-hidden">
+    <section id="beranda" className="relative pt-32 pb-32 md:pt-40 md:pb-40 min-h-[70vh] flex items-center overflow-hidden">
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0 overflow-hidden bg-charcoal">
         <video
-          className="absolute top-1/2 left-1/2 w-[100vw] h-[56.25vw] min-h-[100vh] min-w-[177.77vh] -translate-x-1/2 -translate-y-1/2 object-cover pointer-events-none"
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none"
           src="/Video Project.mp4"
           autoPlay
           muted
@@ -237,36 +351,32 @@ const Hero = () => {
         <div className="absolute inset-0 bg-charcoal/60 mix-blend-multiply pointer-events-none"></div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 relative z-10 w-full">
-        <div className="max-w-3xl">
-          
-          {/* Left: Copy */}
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-white"
-          >
-             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 border border-white/20 mb-6 backdrop-blur-sm">
-                <Globe className="w-4 h-4 text-brand-yellow" />
-                <span className="text-xs font-semibold text-brand-yellow uppercase tracking-widest">{t.hero.badge}</span>
-              </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 text-white font-display">
-              {t.hero.title1} <span className="text-brand-yellow">{t.hero.title2}</span>
-            </h1>
-            <p className="text-lg text-gray-300 mb-8 max-w-xl font-light">
-              {t.hero.desc}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <button className="bg-brand-yellow hover:bg-brand-yellow-hover text-white px-8 py-3.5 font-medium transition-colors flex items-center justify-center gap-2">
-                {t.hero.btnLearn} <ArrowRight className="w-4 h-4" />
-              </button>
-              <button className="bg-transparent border border-white/30 hover:bg-white/10 text-white px-8 py-3.5 font-medium transition-colors flex items-center justify-center">
-                {t.hero.btnContact}
-              </button>
-            </div>
-          </motion.div>
-        </div>
+      <div className="max-w-7xl mx-auto px-6 relative z-10 w-full text-center md:text-left">
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="max-w-3xl mx-auto md:mx-0"
+        >
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 border border-white/20 mb-6 backdrop-blur-sm rounded-sm">
+            <Globe className="w-4 h-4 text-brand-yellow" />
+            <span className="text-xs font-semibold text-brand-yellow uppercase tracking-widest">{t.hero.badge}</span>
+          </div>
+          <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold leading-tight mb-6 text-white font-display">
+            {t.hero.title1} <br className="hidden md:block" /> <span className="text-brand-yellow">{t.hero.title2}</span>
+          </h1>
+          <p className="text-lg md:text-xl text-gray-300 mb-8 max-w-2xl font-light mx-auto md:mx-0">
+            {t.hero.desc}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+            <button className="bg-brand-yellow hover:bg-brand-yellow-hover text-white px-8 py-3.5 font-medium transition-colors flex items-center justify-center gap-2 rounded-sm shadow-lg">
+              {t.hero.btnLearn} <ArrowRight className="w-4 h-4" />
+            </button>
+            <button className="bg-transparent border border-white/30 hover:bg-white/10 text-white px-8 py-3.5 font-medium transition-colors flex items-center justify-center rounded-sm backdrop-blur-sm">
+              {t.hero.btnContact}
+            </button>
+          </div>
+        </motion.div>
       </div>
     </section>
   );
@@ -365,63 +475,89 @@ const Services = () => {
 
 // 6. Insights Section
 const Insights = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   
-  const localizedRouteData = routeData.map((d, i) => ({
-    ...d,
-    name: t.insights.routes[i] || d.name
-  }));
+  // Use localized route Data if needed, or default
+  const localizedRouteData = [
+    { name: language === 'en' ? 'Singapore' : 'Singapura', volume: 320 },
+    { name: language === 'en' ? 'China' : 'Tiongkok', volume: 280 },
+    { name: language === 'en' ? 'Japan' : 'Jepang', volume: 210 },
+    { name: language === 'en' ? 'Netherlands' : 'Belanda', volume: 190 },
+    { name: language === 'en' ? 'Americas' : 'Amerika', volume: 160 },
+    { name: language === 'en' ? 'Germany' : 'Jerman', volume: 140 },
+  ];
 
   return (
-    <section className="py-16 md:py-20 bg-charcoal text-white">
+    <section className="py-16 md:py-24 bg-soft-gray border-t border-gray-100 text-charcoal">
       <div className="max-w-7xl mx-auto px-6">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          <div>
-            <h3 className="text-sm font-bold text-brand-yellow uppercase tracking-widest mb-3">{t.insights.badge}</h3>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 leading-tight">
-              {t.insights.title}
-            </h2>
-            <p className="text-gray-400 font-light mb-8">
-              {t.insights.desc}
-            </p>
-            
-            <div className="space-y-6">
-              <div className="p-5 border border-gray-700 bg-gray-800/50">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="font-medium text-gray-300">{t.insights.accuracy}</span>
-                  <span className="text-brand-yellow font-bold text-xl">98.5%</span>
-                </div>
-                <div className="w-full bg-gray-700 h-1.5">
-                  <div className="bg-brand-yellow h-1.5" style={{ width: '98.5%' }}></div>
-                </div>
-              </div>
-              
-              <div className="p-5 border border-gray-700 bg-gray-800/50">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="font-medium text-gray-300">{t.insights.capacity}</span>
-                  <span className="text-brand-yellow font-bold text-xl">150K+</span>
-                </div>
-                <div className="w-full bg-gray-700 h-1.5">
-                  <div className="bg-brand-yellow h-1.5" style={{ width: '85%' }}></div>
-                </div>
-              </div>
+        <div className="mb-12">
+          <h3 className="text-sm font-bold text-brand-yellow uppercase tracking-widest mb-3">{t.insights.badge}</h3>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 leading-tight tracking-tight">
+            {t.insights.title}
+          </h2>
+          <p className="text-gray-600 font-light max-w-3xl leading-relaxed">
+            {t.insights.desc}
+          </p>
+        </div>
+        
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 border border-gray-100 p-6 md:p-8 mb-8 bg-white shadow-sm">
+          {t.insights.stats?.map((stat: any, idx: number) => (
+            <div key={idx} className={cn("flex flex-col", idx < 3 ? "md:border-r md:border-gray-100 pr-4" : "")}>
+              <span className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">{stat.label}</span>
+              <span className="text-3xl md:text-4xl font-bold text-charcoal mb-2">{stat.value}</span>
+              <span className="text-xs md:text-sm font-medium text-brand-yellow font-mono">{stat.trend}</span>
             </div>
-          </div>
-          
-          <div className="bg-gray-900 border border-gray-800 p-6 md:p-8 relative">
-            <h4 className="text-sm font-bold text-gray-400 mb-6 uppercase tracking-wider">{t.insights.distribution}</h4>
-            <div className="h-64 w-full">
-               <ResponsiveContainer width="100%" height="100%">
-                 <BarChart data={localizedRouteData} layout="vertical" margin={{ top: 0, right: 0, left: 30, bottom: 0 }}>
-                   <XAxis type="number" hide />
-                   <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: '#9CA3AF', fontSize: 12 }} />
-                   <Tooltip cursor={{fill: '#1f2937'}} contentStyle={{ backgroundColor: '#111827', border: '1px solid #374151', color: '#fff' }} />
-                   <Bar dataKey="volume" fill="#EAB308" barSize={24} />
-                 </BarChart>
-               </ResponsiveContainer>
-            </div>
+          ))}
+        </div>
+
+        {/* Charts Grid */}
+        <div className="border border-gray-100 bg-white shadow-sm max-w-full overflow-hidden">
+          <div className="grid lg:grid-cols-2">
+             {/* Chart 1: Area Chart */}
+             <div className="w-full p-6 md:p-8 lg:border-r lg:border-gray-100 border-b lg:border-b-0 border-gray-100">
+               <div className="flex justify-between items-start mb-10">
+                 <div>
+                   <h4 className="font-bold text-charcoal mb-1">{t.insights.chart1Title}</h4>
+                   <p className="text-sm text-gray-500 font-light">{t.insights.chart1Subtitle}</p>
+                 </div>
+                 <span className="bg-brand-yellow font-bold text-xs py-1 px-3 text-white rounded-sm">2024</span>
+               </div>
+               
+               <div className="h-64 w-full relative -ml-4">
+                 <ResponsiveContainer width="100%" height="100%">
+                   <AreaChart data={deliveryData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 11 }} dy={10} />
+                     <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 11 }} dx={-5} domain={[0, 1800]} ticks={[0, 450, 900, 1350, 1800]} />
+                     <Tooltip contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '4px', fontSize: '13px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                     <Area type="monotone" dataKey="TEU" stroke="#EAB308" strokeWidth={2} fill="#FEF08A" fillOpacity={0.4} />
+                   </AreaChart>
+                 </ResponsiveContainer>
+               </div>
+             </div>
+
+             {/* Chart 2: Bar Chart */}
+             <div className="w-full p-6 md:p-8">
+                <div className="mb-10">
+                   <h4 className="font-bold text-charcoal mb-1">{t.insights.chart2Title}</h4>
+                   <p className="text-sm text-gray-500 font-light">{t.insights.chart2Subtitle}</p>
+                 </div>
+                 <div className="h-64 w-full">
+                   <ResponsiveContainer width="100%" height="100%">
+                     <BarChart data={localizedRouteData} layout="vertical" margin={{ top: 0, right: 0, left: 10, bottom: 0 }}>
+                       <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f3f4f6" />
+                       <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 11 }} domain={[0, 320]} ticks={[0, 80, 160, 240, 320]} />
+                       <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: '#4b5563', fontSize: 12 }} width={80} />
+                       <Tooltip cursor={{fill: '#f9fafb'}} contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '4px', fontSize: '13px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                       <Bar dataKey="volume" fill="#EAB308" barSize={14} radius={[0, 4, 4, 0]} />
+                     </BarChart>
+                   </ResponsiveContainer>
+                </div>
+             </div>
           </div>
         </div>
+
       </div>
     </section>
   );
@@ -618,6 +754,11 @@ const AppContent = () => {
           <Navbar />
           <main>
             <Hero />
+            <div className="bg-soft-gray w-full pt-[1px]">
+              <div className="relative -mt-20 md:-mt-[4.5rem] lg:-mt-16 z-30 max-w-4xl lg:max-w-5xl mx-auto px-4 sm:px-6 w-full">
+                <TrackingWidget />
+              </div>
+            </div>
             <About />
             <Services />
             <Insights />
