@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { 
   Ship, Plane, Package, Truck, Globe, ShieldCheck, Clock, 
   MapPin, Menu, X, ArrowRight, BarChart3, Users, Building, ChevronRight, Anchor, ChevronDown, Search, CheckCircle2, Clock3
@@ -11,6 +12,7 @@ import {
 import { cn } from './lib/utils';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { Language } from './translations';
+import Login from './Login';
 
 // --- DATA ---
 const deliveryData = [
@@ -176,9 +178,9 @@ const Navbar = () => {
 
         {/* Desktop CTA */}
         <div className="hidden md:block">
-          <button className="bg-brand-yellow hover:bg-brand-yellow-hover text-white px-5 py-2.5 text-sm font-medium transition-colors">
-            {t.nav.consultation}
-          </button>
+          <Link to="/login" className="bg-brand-yellow hover:bg-brand-yellow-hover text-white px-5 py-2.5 text-sm font-medium transition-colors inline-block">
+            {t.nav.login}
+          </Link>
         </div>
 
         {/* Mobile Toggle */}
@@ -207,9 +209,9 @@ const Navbar = () => {
                   {link.name}
                 </a>
               ))}
-              <button className="bg-brand-yellow text-white px-5 py-3 text-sm font-medium w-full mt-4">
-                {t.nav.consultationNow}
-              </button>
+              <Link to="/login" className="bg-brand-yellow text-white px-5 py-3 text-sm font-medium w-full mt-4 text-center block">
+                {t.nav.login}
+              </Link>
             </div>
           </motion.div>
         )}
@@ -369,12 +371,12 @@ const Hero = () => {
             {t.hero.desc}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-            <button className="bg-brand-yellow hover:bg-brand-yellow-hover text-white px-8 py-3.5 font-medium transition-colors flex items-center justify-center gap-2 rounded-sm shadow-lg">
+            <a href="#layanan" className="bg-brand-yellow hover:bg-brand-yellow-hover text-white px-8 py-3.5 font-medium transition-colors flex items-center justify-center gap-2 rounded-sm shadow-lg">
               {t.hero.btnLearn} <ArrowRight className="w-4 h-4" />
-            </button>
-            <button className="bg-transparent border border-white/30 hover:bg-white/10 text-white px-8 py-3.5 font-medium transition-colors flex items-center justify-center rounded-sm backdrop-blur-sm">
+            </a>
+            <a href="#kontak" className="bg-transparent border border-white/30 hover:bg-white/10 text-white px-8 py-3.5 font-medium transition-colors flex items-center justify-center rounded-sm backdrop-blur-sm">
               {t.hero.btnContact}
-            </button>
+            </a>
           </div>
         </motion.div>
       </div>
@@ -655,12 +657,12 @@ const CTA = () => {
           {t.cta.desc}
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4">
-          <button className="bg-charcoal text-white px-8 py-4 font-bold hover:bg-gray-800 transition-colors">
+          <a href="#kontak" className="bg-charcoal text-white px-8 py-4 font-bold hover:bg-gray-800 transition-colors flex items-center justify-center text-center">
             {t.cta.btnPrimary}
-          </button>
-          <button className="bg-transparent border-2 border-charcoal text-charcoal px-8 py-4 font-bold hover:bg-charcoal hover:text-white transition-colors">
+          </a>
+          <a href="#layanan" className="bg-transparent border-2 border-charcoal text-charcoal px-8 py-4 font-bold hover:bg-charcoal hover:text-white transition-colors flex items-center justify-center text-center">
             {t.cta.btnSecondary}
-          </button>
+          </a>
         </div>
       </div>
     </section>
@@ -776,7 +778,12 @@ const AppContent = () => {
 export default function App() {
   return (
     <LanguageProvider>
-       <AppContent />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<AppContent />} />
+          <Route path="/login" element={<Login />} />
+        </Routes>
+      </BrowserRouter>
     </LanguageProvider>
   )
 }

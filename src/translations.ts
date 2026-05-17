@@ -12,7 +12,8 @@ export const translations = {
       network: "Jaringan Global",
       contact: "Kontak",
       consultation: "Konsultasi",
-      consultationNow: "Konsultasi Sekarang"
+      consultationNow: "Konsultasi Sekarang",
+      login: "Masuk Portal"
     },
     tracking: {
       title: "Lacak Pengiriman",
@@ -119,7 +120,8 @@ export const translations = {
       network: "Global Network",
       contact: "Contact",
       consultation: "Consultation",
-      consultationNow: "Consultation Now"
+      consultationNow: "Consultation Now",
+      login: "Client Portal"
     },
     tracking: {
       title: "Track Shipment",
