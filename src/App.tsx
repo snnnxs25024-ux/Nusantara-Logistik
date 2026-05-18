@@ -13,6 +13,7 @@ import { cn } from './lib/utils';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { Language } from './translations';
 import Login from './Login';
+import Dashboard from './Dashboard';
 
 // --- DATA ---
 const deliveryData = [
@@ -782,6 +783,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<AppContent />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
       </BrowserRouter>
     </LanguageProvider>
