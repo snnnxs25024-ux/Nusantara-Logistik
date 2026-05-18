@@ -95,11 +95,12 @@ const Login = () => {
             >
               {/* Header */}
               <div className="p-8 pb-6 text-center border-b border-gray-100">
-                <div className="w-12 h-12 bg-brand-yellow flex items-center justify-center mx-auto mb-4 rounded-sm">
-                  <Anchor className="text-white w-6 h-6" />
+                <div className="w-20 h-20 flex items-center justify-center mx-auto mb-4 overflow-hidden">
+                  <img src="https://i.imgur.com/qdxsvsw.png" alt="PT TRIBUANA CARGO INDONESIA" className="w-full h-full object-contain" />
                 </div>
-                <h2 className="text-2xl font-bold text-charcoal mb-2 font-display">Masuk ke Akun</h2>
-                <p className="text-sm text-gray-500 font-light">Akses dasbor logistik dan operasional Anda</p>
+                <h2 className="text-2xl font-bold text-charcoal mb-1 font-display uppercase tracking-tight">TRIBUANA CARGO</h2>
+                <h3 className="text-sm font-bold text-gray-400 mb-2 font-display">PT TRIBUANA CARGO INDONESIA</h3>
+                <p className="text-xs text-gray-500 font-light italic">"Solusi Logistik Terpercaya"</p>
               </div>
 
               <div className="p-8 pt-6">
@@ -557,7 +558,7 @@ const Login = () => {
         {/* Footer info minimal for login */}
         <div className="mt-8 text-center">
             <p className="text-xs text-gray-400 font-light">
-              © {new Date().getFullYear()} Nusantara Logistics. All rights reserved.
+              © {new Date().getFullYear()} PT TRIBUANA CARGO INDONESIA. All rights reserved.
             </p>
         </div>
       </div>

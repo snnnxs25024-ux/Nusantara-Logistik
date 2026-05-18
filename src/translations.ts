@@ -18,7 +18,7 @@ export const translations = {
     tracking: {
       title: "Lacak Pengiriman",
       desc: "Masukkan nomor resi (AWB/BL) untuk melihat status pengiriman.",
-      placeholder: "Contoh: NLP-8823901",
+      placeholder: "Contoh: TRI-8823901",
       status: "Status Aktif",
       inTransit: "Sedang Dikirim (In Transit)",
       awb: "No. Resi",
@@ -29,7 +29,7 @@ export const translations = {
       step4: "Tiba di Gudang Tujuan"
     },
     hero: {
-      badge: "Global Supply Chain",
+      badge: "Tribuana Global Supply Chain",
       title1: "Solusi Export Import &",
       title2: "Logistik Global",
       desc: "Mengelola kebutuhan pengiriman, distribusi, dan logistik internasional secara profesional dan terpercaya untuk efisiensi bisnis Anda.",
@@ -39,7 +39,7 @@ export const translations = {
     about: {
       badge: "Profil Perusahaan",
       title: "Mitra Logistik Internasional dengan Standar Enterprise",
-      desc1: "Nusantara Logistik Perdana hadir sebagai jembatan untuk aktivitas perdagangan internasional Anda. Kami menyederhanakan kompleksitas rantai pasok global melalui layanan komprehensif mulai dari pengiriman antar negara hingga manajemen pergudangan domestik.",
+      desc1: "PT TRIBUANA CARGO INDONESIA hadir sebagai jembatan untuk aktivitas perdagangan internasional Anda. Kami menyederhanakan kompleksitas rantai pasok global melalui layanan komprehensif mulai dari pengiriman antar negara hingga manajemen pergudangan domestik.",
       desc2: "Dengan infrastruktur modern dan tim yang berpengalaman dalam regulasi kepabeanan, kami menjamin keamanan, ketepatan waktu, dan efisiensi biaya untuk setiap kargo yang Anda percayakan.",
       expYears: "Tahun Pengalaman",
       expCountries: "Negara Tujuan",
@@ -104,7 +104,7 @@ export const translations = {
       address: "Gedung Logistik Sentral Lt. 12",
       address2: "Jl. Pelabuhan Tanjung Priok No.45",
       address3: "Jakarta Utara, 14310",
-      copyright: "© 2026 Nusantara Logistik Perdana. Hak Cipta Dilindungi Undang-Undang.",
+      copyright: "© 2026 PT TRIBUANA CARGO INDONESIA. Hak Cipta Dilindungi Undang-Undang.",
       privacy: "Privasi",
       terms: "Syarat & Ketentuan"
     }
@@ -126,7 +126,7 @@ export const translations = {
     tracking: {
       title: "Track Shipment",
       desc: "Enter your tracking number (AWB/BL) to view the shipping status.",
-      placeholder: "Example: NLP-8823901",
+      placeholder: "Example: TRI-8823901",
       status: "Active Status",
       inTransit: "In Transit",
       awb: "Tracking No.",
@@ -137,7 +137,7 @@ export const translations = {
       step4: "Arrived at Destination"
     },
     hero: {
-      badge: "Global Supply Chain",
+      badge: "Tribuana Global Supply Chain",
       title1: "Export Import &",
       title2: "Global Logistics Solution",
       desc: "Professionally and reliably manage your international shipping, distribution, and logistics needs for your business efficiency.",
@@ -147,7 +147,7 @@ export const translations = {
     about: {
       badge: "Company Profile",
       title: "International Logistics Partner with Enterprise Standards",
-      desc1: "Nusantara Logistik Perdana serves as a bridge for your international trade activities. We simplify the complexity of global supply chains through comprehensive services ranging from cross-border shipping to domestic warehouse management.",
+      desc1: "PT TRIBUANA CARGO INDONESIA serves as a bridge for your international trade activities. We simplify the complexity of global supply chains through comprehensive services ranging from cross-border shipping to domestic warehouse management.",
       desc2: "With modern infrastructure and a team experienced in customs regulations, we guarantee security, timeliness, and cost efficiency for every cargo you entrust to us.",
       expYears: "Years Experience",
       expCountries: "Destination Countries",
@@ -212,7 +212,7 @@ export const translations = {
       address: "Logistik Sentral Building 12th Fl",
       address2: "Jl. Pelabuhan Tanjung Priok No.45",
       address3: "North Jakarta, 14310",
-      copyright: "© 2026 Nusantara Logistik Perdana. All Rights Reserved.",
+      copyright: "© 2026 PT TRIBUANA CARGO INDONESIA. All Rights Reserved.",
       privacy: "Privacy",
       terms: "Terms & Conditions"
     }

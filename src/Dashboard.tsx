@@ -5,7 +5,8 @@ import {
   LogOut, Bell, Search, Menu, X, ArrowUpRight, ArrowDownRight,
   MapPin, Clock, BarChart3, Plus, Filter, ChevronRight,
   Ship, Plane, Info, CheckCircle2, AlertCircle, RefreshCw,
-  FileText, ChevronDown, ChevronUp, Download, Eye, FileSpreadsheet, FileArchive, File
+  FileText, ChevronDown, ChevronUp, Download, Eye, FileSpreadsheet, FileArchive, File,
+  Edit, Trash2, Printer, Check, XCircle, Share2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
@@ -32,12 +33,96 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isDocsOpen, setIsDocsOpen] = useState(false);
   const [isNewShipmentModalOpen, setIsNewShipmentModalOpen] = useState(false);
+  
+  // Document CRUD State
+  const [activeDocs, setActiveDocs] = useState<any>({
+    'docs-manifest': [
+      { id: 'MNF-2024-001', name: 'Manifest Pelayaran Jawa-Sumatera', date: '15 Mei 2026', size: '1.2 MB', type: 'PDF', status: 'Verified' },
+      { id: 'MNF-2024-002', name: 'Manifest Ekspor Batam-Singapore', date: '14 Mei 2026', size: '850 KB', type: 'Excel', status: 'Pending' },
+      { id: 'MNF-2024-003', name: 'Manifest Domestik Surabaya-Makassar', date: '12 Mei 2026', size: '2.1 MB', type: 'PDF', status: 'Verified' },
+    ],
+    'docs-bol': [
+      { id: 'BOL-55219', name: 'B/L - PT. Maju Bersama (JKT-SRB)', date: '16 Mei 2026', size: '450 KB', type: 'PDF', status: 'Verified' },
+      { id: 'BOL-55220', name: 'B/L - CV. Global Tekno (MDN-JKT)', date: '15 Mei 2026', size: '420 KB', type: 'PDF', status: 'Verified' },
+    ],
+    'docs-invoice': [
+      { id: 'INV-88210', name: 'Komersial Invoice #88210 - Indo Food', date: '16 Mei 2026', size: '120 KB', type: 'PDF', status: 'Paid' },
+      { id: 'INV-88211', name: 'Tagihan Layanan Logistik Q2', date: '10 Mei 2026', size: '310 KB', type: 'Excel', status: 'Overdue' },
+    ],
+    'docs-sj': [
+      { id: 'SJ-9901', name: 'Surat Jalan G-001 (Cakung - Priok)', date: '17 Mei 2026', size: '95 KB', type: 'PDF', status: 'In Transit' },
+      { id: 'SJ-9902', name: 'Surat Jalan G-002 (Balaraja)', date: '17 Mei 2026', size: '102 KB', type: 'PDF', status: 'Pending' },
+    ],
+    'docs-izin': [
+      { id: 'LIC-001', name: 'Izin Trayek Alur Laut Tribuana', date: 'Berlaku s/d 2028', size: '4.5 MB', type: 'PDF', status: 'Active' },
+      { id: 'LIC-002', name: 'Sertifikasi ISO 9001:2015 Logistik', date: 'Berlaku s/d 2027', size: '2.8 MB', type: 'PDF', status: 'Active' },
+      { id: 'LIC-003', name: 'Izin Bongkar Muat B3', date: 'Berlaku s/d 2026', size: '1.2 MB', type: 'PDF', status: 'Expired' },
+    ],
+  });
+
+  const [docModal, setDocModal] = useState<{isOpen: boolean, mode: 'add' | 'edit' | 'view', data: any}>({
+    isOpen: false,
+    mode: 'view',
+    data: null
+  });
+
+  const [isExporting, setIsExporting] = useState<string | null>(null);
   const [selectedFleet, setSelectedFleet] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
 
   const handleLogout = () => {
     navigate('/login');
+  };
+
+  const handleDocAction = (action: 'add' | 'edit' | 'view' | 'delete', doc?: any) => {
+    if (action === 'delete') {
+      if (confirm(`Apakah Anda yakin ingin menghapus dokumen ${doc.id}?`)) {
+        const category = activeTab;
+        setActiveDocs((prev: any) => ({
+          ...prev,
+          [category]: prev[category].filter((d: any) => d.id !== doc.id)
+        }));
+      }
+      return;
+    }
+    setDocModal({ isOpen: true, mode: action, data: doc || null });
+  };
+
+  const handleSaveDoc = (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData(e.target as HTMLFormElement);
+    const newDoc = {
+      id: formData.get('id') as string,
+      name: formData.get('name') as string,
+      date: formData.get('date') as string || new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+      size: formData.get('size') as string || '0 KB',
+      type: formData.get('type') as string,
+      status: formData.get('status') as string,
+    };
+
+    const category = activeTab;
+    if (docModal.mode === 'add') {
+      setActiveDocs((prev: any) => ({
+        ...prev,
+        [category]: [newDoc, ...prev[category]]
+      }));
+    } else {
+      setActiveDocs((prev: any) => ({
+        ...prev,
+        [category]: prev[category].map((d: any) => d.id === docModal.data.id ? newDoc : d)
+      }));
+    }
+    setDocModal({ ...docModal, isOpen: false });
+  };
+
+  const handleExport = (format: 'PDF' | 'EXCEL') => {
+    setIsExporting(format);
+    // Simulated export delay
+    setTimeout(() => {
+      setIsExporting(null);
+      alert(`${format} berhasil di-generate dan siap diunduh!`);
+    }, 2000);
   };
 
   const menuItems = [
@@ -279,7 +364,7 @@ const Dashboard = () => {
             <div className="flex justify-between items-center">
               <div>
                 <h1 className="text-2xl font-bold text-charcoal">Status Armada</h1>
-                <p className="text-sm text-gray-500">Monitor lokasi, performa, dan pemeliharaan armada Nusantara.</p>
+                <p className="text-sm text-gray-500">Monitor lokasi, performa, dan pemeliharaan armada Tribuana.</p>
               </div>
               <button className="flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-charcoal transition-colors">
                 <RefreshCw className="w-4 h-4" />
@@ -289,11 +374,11 @@ const Dashboard = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[
-                { type: 'Kapal Cargo', name: 'Nusantara Pride V', loc: 'Tanjung Priok', status: 'Active', fuel: '85%', odo: '12,500 nm', driver: 'Capt. Herman Sabar' },
+                { type: 'Kapal Cargo', name: 'Tribuana Pride V', loc: 'Tanjung Priok', status: 'Active', fuel: '85%', odo: '12,500 nm', driver: 'Capt. Herman Sabar' },
                 { type: 'Truk Wingbox', name: 'Truk-0421 (B 9021 TX)', loc: 'Rest Area KM 57', status: 'On Delivery', fuel: '45%', odo: '42,901 Km', driver: 'Slamet Riyadi' },
                 { type: 'Pesawat Cargo', name: 'NP-Air 01', loc: 'Bandara Soekarno-Hatta', status: 'Maintenance', fuel: '100%', odo: '2,100 hrs', driver: 'Pilot Firman' },
                 { type: 'Truk CDE', name: 'Truk-0812 (B 1202 SX)', loc: 'Gudang Cakung', status: 'Standby', fuel: '92%', odo: '18,202 Km', driver: 'Eko Prasetyo' },
-                { type: 'Kapal LCT', name: 'Bahtera Nusantara', loc: 'Selat Bali', status: 'Active', fuel: '62%', odo: '8,102 nm', driver: 'Capt. Surya' },
+                { type: 'Kapal LCT', name: 'Bahtera Tribuana', loc: 'Selat Bali', status: 'Active', fuel: '62%', odo: '8,102 nm', driver: 'Capt. Surya' },
               ].map((item, i) => (
                 <div key={i} 
                   onClick={() => setSelectedFleet(item)}
@@ -492,7 +577,7 @@ const Dashboard = () => {
                {[
                  { name: 'PT. Maju Bersama', industry: 'Manufaktur', total: '124 Kiriman', rating: '4.8/5', location: 'Cikarang, Bekasi', contact: 'Bpk. Ridwan' },
                  { name: 'CV. Global Tekno', industry: 'Elektronik', total: '86 Kiriman', rating: '4.9/5', location: 'Tangerang', contact: 'Ibu Maya' },
-                 { name: 'Store Nusantara', industry: 'E-commerce', total: '2,492 Kiriman', rating: '4.7/5', location: 'Jakarta Selatan', contact: 'Doni Pratama' },
+                 { name: 'Store Tribuana', industry: 'E-commerce', total: '2,492 Kiriman', rating: '4.7/5', location: 'Jakarta Selatan', contact: 'Doni Pratama' },
                  { name: 'Indo Food Co.', industry: 'Pangan', total: '412 Kiriman', rating: '4.5/5', location: 'Surabaya', contact: 'Siti Aminah' },
                  { name: 'Karya Logistik', industry: 'Konstruksi', total: '12 Kiriman', rating: '4.4/5', location: 'Makassar', contact: 'Aris Munandar' },
                ].map((c, i) => (
@@ -638,30 +723,8 @@ const Dashboard = () => {
           'docs-sj': 'Surat Jalan (Delivery Order)',
           'docs-izin': 'Izin Operasional & Sertifikasi',
         };
-        const docData: any = {
-          'docs-manifest': [
-            { id: 'MNF-2024-001', name: 'Manifest Pelayaran Jawa-Sumatera', date: '15 Mei 2026', size: '1.2 MB', type: 'PDF' },
-            { id: 'MNF-2024-002', name: 'Manifest Ekspor Batam-Singapore', date: '14 Mei 2026', size: '850 KB', type: 'Excel' },
-            { id: 'MNF-2024-003', name: 'Manifest Domestik Surabaya-Makassar', date: '12 Mei 2026', size: '2.1 MB', type: 'PDF' },
-          ],
-          'docs-bol': [
-            { id: 'BOL-55219', name: 'B/L - PT. Maju Bersama (JKT-SRB)', date: '16 Mei 2026', size: '450 KB', type: 'PDF' },
-            { id: 'BOL-55220', name: 'B/L - CV. Global Tekno (MDN-JKT)', date: '15 Mei 2026', size: '420 KB', type: 'PDF' },
-          ],
-          'docs-invoice': [
-            { id: 'INV-88210', name: 'Komersial Invoice #88210 - Indo Food', date: '16 Mei 2026', size: '120 KB', type: 'PDF' },
-            { id: 'INV-88211', name: 'Tagihan Layanan Logistik Q2', date: '10 Mei 2026', size: '310 KB', type: 'Excel' },
-          ],
-          'docs-sj': [
-            { id: 'SJ-9901', name: 'Surat Jalan G-001 (Cakung - Priok)', date: '17 Mei 2026', size: '95 KB', type: 'PDF' },
-            { id: 'SJ-9902', name: 'Surat Jalan G-002 (Balaraja)', date: '17 Mei 2026', size: '102 KB', type: 'PDF' },
-          ],
-          'docs-izin': [
-            { id: 'LIC-001', name: 'Izin Trayek Alur Laut Nusantara', date: 'Berlaku s/d 2028', size: '4.5 MB', type: 'PDF' },
-            { id: 'LIC-002', name: 'Sertifikasi ISO 9001:2015 Logistik', date: 'Berlaku s/d 2027', size: '2.8 MB', type: 'PDF' },
-            { id: 'LIC-003', name: 'Izin Bongkar Muat B3', date: 'Berlaku s/d 2026', size: '1.2 MB', type: 'PDF' },
-          ],
-        };
+        
+        const currentDocs = activeDocs[activeTab] || [];
         
         return (
           <div className="space-y-6">
@@ -671,13 +734,20 @@ const Dashboard = () => {
                 <p className="text-sm text-gray-500">Arsip dan manajemen dokumen digital operasional.</p>
               </div>
               <div className="flex gap-2">
-                <button className="bg-white border border-gray-200 px-4 py-2 text-xs font-bold rounded-sm hover:bg-soft-gray transition-colors uppercase tracking-widest flex items-center gap-2">
-                  <FileArchive className="w-4 h-4" />
-                  Arsip Lama
+                <button 
+                  onClick={() => handleExport('EXCEL')}
+                  disabled={!!isExporting}
+                  className="bg-white border border-gray-200 px-4 py-2 text-xs font-bold rounded-sm hover:bg-soft-gray transition-colors uppercase tracking-widest flex items-center gap-2 disabled:opacity-50"
+                >
+                  <FileSpreadsheet className="w-4 h-4 text-green-600" />
+                  {isExporting === 'EXCEL' ? 'Exporting...' : 'Export Excel'}
                 </button>
-                <button className="bg-brand-yellow text-white px-4 py-2 text-sm font-bold rounded-sm hover:bg-brand-yellow-hover transition-colors shadow-sm flex items-center gap-2">
+                <button 
+                  onClick={() => handleDocAction('add')}
+                  className="bg-brand-yellow text-white px-4 py-2 text-sm font-bold rounded-sm hover:bg-brand-yellow-hover transition-colors shadow-sm flex items-center gap-2"
+                >
                   <Plus className="w-4 h-4" />
-                  Unggah Dokumen
+                  Buat Baru
                 </button>
               </div>
             </div>
@@ -686,13 +756,23 @@ const Dashboard = () => {
                <div className="p-4 border-b border-gray-50 flex flex-wrap items-center justify-between gap-4 bg-gray-50/30">
                   <div className="relative w-full sm:w-64">
                     <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input type="text" placeholder="Cari nomor dokumen..." className="w-full pl-9 pr-4 py-1.5 bg-white border border-gray-200 text-xs rounded-sm outline-none focus:border-brand-yellow" />
+                    <input 
+                      type="text" 
+                      placeholder="Cari nomor dokumen..." 
+                      className="w-full pl-9 pr-4 py-1.5 bg-white border border-gray-200 text-xs rounded-sm outline-none focus:border-brand-yellow" 
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
                   </div>
                   <div className="flex items-center gap-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                    <span>Total: {docData[activeTab].length} Berkas</span>
+                    <span>Total: {currentDocs.length} Berkas</span>
                     <div className="h-4 w-px bg-gray-200"></div>
-                    <button className="flex items-center gap-1 hover:text-charcoal transition-colors">
-                      <Filter className="w-3 h-3" /> Filter
+                    <button 
+                      onClick={() => handleExport('PDF')}
+                      disabled={!!isExporting}
+                      className="flex items-center gap-1 hover:text-red-500 transition-colors disabled:opacity-50"
+                    >
+                      <Printer className="w-3 h-3" /> Cetak PDF
                     </button>
                   </div>
                </div>
@@ -701,16 +781,19 @@ const Dashboard = () => {
                  <table className="w-full text-left">
                    <thead>
                      <tr className="border-b border-gray-100 bg-gray-50/50">
-                       <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Nomor Seri</th>
+                       <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">ID Dokumen</th>
                        <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Nama Berkas</th>
-                       <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Tanggal/Status</th>
+                       <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Tanggal</th>
+                       <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Status</th>
                        <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Format</th>
                        <th className="px-6 py-4"></th>
                      </tr>
                    </thead>
                    <tbody className="divide-y divide-gray-100">
-                     {docData[activeTab].map((doc: any, i: number) => (
-                       <tr key={i} className="hover:bg-soft-gray transition-colors group">
+                     {currentDocs
+                       .filter((d: any) => d.id.toLowerCase().includes(searchQuery.toLowerCase()) || d.name.toLowerCase().includes(searchQuery.toLowerCase()))
+                       .map((doc: any, i: number) => (
+                       <tr key={doc.id} className="hover:bg-soft-gray transition-colors group">
                          <td className="px-6 py-4 text-xs font-bold text-charcoal">{doc.id}</td>
                          <td className="px-6 py-4">
                            <div className="flex items-center gap-3">
@@ -725,22 +808,56 @@ const Dashboard = () => {
                             </div>
                          </td>
                          <td className="px-6 py-4">
+                            <span className={`px-2 py-0.5 rounded-sm text-[10px] font-bold uppercase tracking-wider ${
+                              ['Verified', 'Paid', 'Active'].includes(doc.status) ? 'bg-green-100 text-green-700' :
+                              ['Pending', 'In Transit'].includes(doc.status) ? 'bg-blue-100 text-blue-700' :
+                              doc.status === 'Overdue' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'
+                            }`}>
+                               {doc.status}
+                            </span>
+                         </td>
+                         <td className="px-6 py-4">
                             <span className={`px-2 py-0.5 rounded-sm text-[10px] font-black ${doc.type === 'PDF' ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`}>
                                {doc.type}
                             </span>
                          </td>
                          <td className="px-6 py-4 text-right">
-                            <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                               <button title="Lihat" className="p-1.5 text-gray-400 hover:text-blue-500 transition-colors">
+                            <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                               <button 
+                                  onClick={() => handleDocAction('view', doc)}
+                                  title="Lihat" 
+                                  className="p-1.5 text-gray-400 hover:text-blue-500 transition-colors"
+                               >
                                   <Eye className="w-4 h-4" />
                                </button>
-                               <button title="Unduh" className="p-1.5 text-gray-400 hover:text-brand-yellow transition-colors">
+                               <button 
+                                  onClick={() => handleDocAction('edit', doc)}
+                                  title="Edit" 
+                                  className="p-1.5 text-gray-400 hover:text-brand-yellow transition-colors"
+                               >
+                                  <Edit className="w-4 h-4" />
+                               </button>
+                               <button 
+                                  onClick={() => handleDocAction('delete', doc)}
+                                  title="Hapus" 
+                                  className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                               </button>
+                               <button title="Unduh" className="p-1.5 text-gray-400 hover:text-charcoal transition-colors">
                                   <Download className="w-4 h-4" />
                                </button>
                             </div>
                          </td>
                        </tr>
                      ))}
+                     {currentDocs.length === 0 && (
+                       <tr>
+                         <td colSpan={6} className="px-6 py-12 text-center text-gray-400 text-sm italic">
+                           Tidak ada dokumen ditemukan.
+                         </td>
+                       </tr>
+                     )}
                    </tbody>
                  </table>
                </div>
@@ -750,7 +867,7 @@ const Dashboard = () => {
                <Info className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
                <div>
                   <h4 className="text-sm font-bold text-blue-900 mb-1">Keamanan Dokumen Digital</h4>
-                  <p className="text-xs text-blue-700 leading-relaxed">Semua dokumen di atas telah terenkripsi end-to-end dan memiliki tanda tangan digital (E-Signature) yang sah sesuai regulasi logistik Nusantara.</p>
+                  <p className="text-xs text-blue-700 leading-relaxed">Semua dokumen di atas telah terenkripsi end-to-end dan memiliki tanda tangan digital (E-Signature) yang sah sesuai regulasi logistik Tribuana.</p>
                </div>
             </div>
           </div>
@@ -777,7 +894,7 @@ const Dashboard = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <div className="space-y-1.5 focus-within:text-brand-yellow transition-colors">
                         <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Nama Lengkap</label>
-                        <input type="text" defaultValue="Administrator Nusantara" className="w-full p-2.5 bg-soft-gray border border-gray-100 text-sm rounded-sm outline-none focus:border-brand-yellow transition-colors text-charcoal font-medium" />
+                        <input type="text" defaultValue="Administrator Tribuana" className="w-full p-2.5 bg-soft-gray border border-gray-100 text-sm rounded-sm outline-none focus:border-brand-yellow transition-colors text-charcoal font-medium" />
                       </div>
                       <div className="space-y-1.5 grayscale opacity-70">
                         <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">ID Pegawai (Read-only)</label>
@@ -846,12 +963,15 @@ const Dashboard = () => {
         transform transition-transform duration-300 ease-in-out flex flex-col
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
-        <div className="h-16 flex items-center px-6 border-b border-gray-100">
+        <div className="h-20 flex items-center px-6 border-b border-gray-100">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-brand-yellow flex items-center justify-center rounded-sm">
-              <Anchor className="text-white w-5 h-5" />
+            <div className="w-12 h-12 flex items-center justify-center overflow-hidden">
+              <img src="https://i.imgur.com/qdxsvsw.png" alt="PT TRIBUANA CARGO INDONESIA" className="w-full h-full object-contain" />
             </div>
-            <span className="font-bold text-lg tracking-tight text-charcoal">NUSANTARA</span>
+            <div className="flex flex-col">
+              <span className="font-bold text-sm tracking-tight text-charcoal leading-none">TRIBUANA</span>
+              <span className="font-bold text-[10px] text-gray-400 tracking-tighter leading-none">CARGO INDONESIA</span>
+            </div>
           </div>
         </div>
         
@@ -1134,6 +1254,186 @@ const Dashboard = () => {
                    <button className="flex-1 bg-charcoal text-white py-3 text-xs font-bold rounded-sm uppercase tracking-widest hover:bg-gray-800 transition-colors">Telepon PIC</button>
                    <button onClick={() => setSelectedFleet(null)} className="flex-1 bg-brand-yellow text-white py-3 text-xs font-bold rounded-sm uppercase tracking-widest hover:bg-brand-yellow-hover transition-colors shadow-sm">Lacak di Peta</button>
                 </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Document CRUD Modal */}
+      <AnimatePresence>
+        {docModal.isOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setDocModal({ ...docModal, isOpen: false })}
+              className="absolute inset-0 bg-charcoal/60 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="relative bg-white w-full max-w-lg rounded-sm shadow-2xl overflow-hidden"
+            >
+              <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                <h3 className="text-lg font-bold text-charcoal uppercase tracking-widest flex items-center gap-2 font-display">
+                  {docModal.mode === 'add' ? <Plus className="w-5 h-5 text-brand-yellow" /> : 
+                   docModal.mode === 'edit' ? <Edit className="w-5 h-5 text-brand-yellow" /> : 
+                   <Eye className="w-5 h-5 text-brand-yellow" />}
+                  {docModal.mode === 'add' ? 'Tambah Dokumen' : 
+                   docModal.mode === 'edit' ? 'Edit Dokumen' : 'Detail Dokumen'}
+                </h3>
+                <button onClick={() => setDocModal({ ...docModal, isOpen: false })} className="text-gray-400 hover:text-charcoal p-1">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              
+              <form onSubmit={handleSaveDoc} className="p-6 space-y-5">
+                <div className="grid grid-cols-1 gap-5">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">ID Dokumen</label>
+                    <input 
+                      name="id"
+                      required
+                      readOnly={docModal.mode === 'view' || docModal.mode === 'edit'}
+                      defaultValue={docModal.data?.id}
+                      placeholder="e.g. DOC-2024-001"
+                      className={`w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-sm text-sm focus:border-brand-yellow focus:bg-white transition-all outline-none 
+                        ${(docModal.mode === 'view' || docModal.mode === 'edit') ? 'text-gray-500 cursor-not-allowed' : 'text-charcoal'}`}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Nama Dokumen</label>
+                    <input 
+                      name="name"
+                      required
+                      readOnly={docModal.mode === 'view'}
+                      defaultValue={docModal.data?.name}
+                      placeholder="e.g. Manifest Jakarta"
+                      className={`w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-sm text-sm focus:border-brand-yellow focus:bg-white transition-all outline-none 
+                        ${docModal.mode === 'view' ? 'text-gray-500' : 'text-charcoal'}`}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Format</label>
+                      <select 
+                        name="type"
+                        disabled={docModal.mode === 'view'}
+                        defaultValue={docModal.data?.type || 'PDF'}
+                        className={`w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-sm text-sm focus:border-brand-yellow focus:bg-white transition-all outline-none 
+                          ${docModal.mode === 'view' ? 'text-gray-500' : 'text-charcoal'}`}
+                      >
+                        <option value="PDF">PDF Document</option>
+                        <option value="Excel">Excel Spreadsheet</option>
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Status</label>
+                      <select 
+                        name="status"
+                        disabled={docModal.mode === 'view'}
+                        defaultValue={docModal.data?.status || 'Pending'}
+                        className={`w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-sm text-sm focus:border-brand-yellow focus:bg-white transition-all outline-none 
+                          ${docModal.mode === 'view' ? 'text-gray-500' : 'text-charcoal'}`}
+                      >
+                        <option value="Pending">Pending</option>
+                        <option value="Verified">Verified</option>
+                        <option value="Active">Active</option>
+                        <option value="In Transit">In Transit</option>
+                        <option value="Paid">Paid</option>
+                        <option value="Overdue">Overdue</option>
+                        <option value="Expired">Expired</option>
+                      </select>
+                    </div>
+                  </div>
+                  {docModal.mode !== 'add' && (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Ukuran</label>
+                        <input 
+                          name="size"
+                          readOnly
+                          defaultValue={docModal.data?.size}
+                          className="w-full px-4 py-2.5 bg-gray-100 border border-gray-200 rounded-sm text-sm text-gray-500 outline-none"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Terakhir Diperbarui</label>
+                        <input 
+                          name="date"
+                          readOnly
+                          defaultValue={docModal.data?.date}
+                          className="w-full px-4 py-2.5 bg-gray-100 border border-gray-200 rounded-sm text-sm text-gray-500 outline-none"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-4 flex gap-3">
+                  <button 
+                    type="button"
+                    onClick={() => setDocModal({ ...docModal, isOpen: false })}
+                    className="flex-1 px-6 py-3 border border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-widest rounded-sm hover:bg-soft-gray transition-colors"
+                  >
+                    Batal
+                  </button>
+                  {docModal.mode !== 'view' && (
+                    <button 
+                      type="submit"
+                      className="flex-1 px-6 py-3 bg-brand-yellow text-white text-xs font-bold uppercase tracking-widest rounded-sm hover:bg-brand-yellow-hover transition-colors shadow-lg shadow-brand-yellow/20"
+                    >
+                      {docModal.mode === 'add' ? 'Simpan' : 'Perbarui'}
+                    </button>
+                  )}
+                  {docModal.mode === 'view' && (
+                    <button 
+                      type="button"
+                      onClick={() => handleExport('PDF')}
+                      className="flex-1 px-6 py-3 bg-charcoal text-white text-xs font-bold uppercase tracking-widest rounded-sm hover:bg-gray-800 transition-colors shadow-lg"
+                    >
+                      <div className="flex items-center justify-center gap-2">
+                        <Printer className="w-4 h-4" /> Cetak
+                      </div>
+                    </button>
+                  )}
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Global Export Loading Overlay */}
+      <AnimatePresence>
+        {isExporting && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center bg-charcoal/40 backdrop-blur-md">
+            <motion.div 
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              className="bg-white p-8 rounded-sm shadow-2xl flex flex-col items-center gap-4 text-center max-w-sm"
+            >
+              <div className="relative">
+                <RefreshCw className="w-12 h-12 text-brand-yellow animate-spin" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Download className="w-5 h-5 text-brand-yellow" />
+                </div>
+              </div>
+              <div>
+                <h3 className="font-bold text-charcoal">Menyiapkan Laporan</h3>
+                <p className="text-xs text-gray-500 mt-1">Mengonversi data Tribuana ke format {isExporting}. Mohon tunggu sebentar...</p>
+              </div>
+              <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden mt-2">
+                <motion.div 
+                  initial={{ width: 0 }}
+                  animate={{ width: '100%' }}
+                  transition={{ duration: 2 }}
+                  className="h-full bg-brand-yellow"
+                />
               </div>
             </motion.div>
           </div>
