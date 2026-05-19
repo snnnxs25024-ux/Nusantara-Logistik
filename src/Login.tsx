@@ -96,7 +96,7 @@ const Login = () => {
             >
               {/* Header */}
               <div className="p-8 pb-6 text-center border-b border-gray-100">
-                <div className="w-20 h-20 flex items-center justify-center mx-auto mb-4 overflow-hidden">
+                <div className="w-28 h-28 flex items-center justify-center mx-auto mb-4 overflow-hidden">
                   <img src="https://i.imgur.com/QN8Pxlv.png" alt="PT TRIBUANA CARGO INDONESIA" className="w-full h-full object-contain" />
                 </div>
                 <h2 className="text-2xl font-bold text-charcoal mb-1 font-display uppercase tracking-tight">TRIBUANA CARGO</h2>

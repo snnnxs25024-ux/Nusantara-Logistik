@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Anchor, LayoutDashboard, Package, Truck, Users, Settings, 
@@ -10,6 +10,9 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 
 const deliveryData = [
   { name: 'Sen', volume: 120, revenue: 45 },
@@ -35,35 +38,58 @@ const Dashboard = () => {
   const [isNewShipmentModalOpen, setIsNewShipmentModalOpen] = useState(false);
   
   // Document CRUD State
-  const [activeDocs, setActiveDocs] = useState<any>({
-    'docs-manifest': [
-      { id: 'MNF-2024-001', name: 'Manifest Pelayaran Jawa-Sumatera', date: '15 Mei 2026', size: '1.2 MB', type: 'PDF', status: 'Verified' },
-      { id: 'MNF-2024-002', name: 'Manifest Ekspor Batam-Singapore', date: '14 Mei 2026', size: '850 KB', type: 'Excel', status: 'Pending' },
-      { id: 'MNF-2024-003', name: 'Manifest Domestik Surabaya-Makassar', date: '12 Mei 2026', size: '2.1 MB', type: 'PDF', status: 'Verified' },
-    ],
-    'docs-bol': [
-      { id: 'BOL-55219', name: 'B/L - PT. Maju Bersama (JKT-SRB)', date: '16 Mei 2026', size: '450 KB', type: 'PDF', status: 'Verified' },
-      { id: 'BOL-55220', name: 'B/L - CV. Global Tekno (MDN-JKT)', date: '15 Mei 2026', size: '420 KB', type: 'PDF', status: 'Verified' },
-    ],
-    'docs-invoice': [
-      { id: 'INV-88210', name: 'Komersial Invoice #88210 - Indo Food', date: '16 Mei 2026', size: '120 KB', type: 'PDF', status: 'Paid' },
-      { id: 'INV-88211', name: 'Tagihan Layanan Logistik Q2', date: '10 Mei 2026', size: '310 KB', type: 'Excel', status: 'Overdue' },
-    ],
-    'docs-sj': [
-      { id: 'SJ-9901', name: 'Surat Jalan G-001 (Cakung - Priok)', date: '17 Mei 2026', size: '95 KB', type: 'PDF', status: 'In Transit' },
-      { id: 'SJ-9902', name: 'Surat Jalan G-002 (Balaraja)', date: '17 Mei 2026', size: '102 KB', type: 'PDF', status: 'Pending' },
-    ],
-    'docs-izin': [
-      { id: 'LIC-001', name: 'Izin Trayek Alur Laut Tribuana', date: 'Berlaku s/d 2028', size: '4.5 MB', type: 'PDF', status: 'Active' },
-      { id: 'LIC-002', name: 'Sertifikasi ISO 9001:2015 Logistik', date: 'Berlaku s/d 2027', size: '2.8 MB', type: 'PDF', status: 'Active' },
-      { id: 'LIC-003', name: 'Izin Bongkar Muat B3', date: 'Berlaku s/d 2026', size: '1.2 MB', type: 'PDF', status: 'Expired' },
-    ],
+  const [activeDocs, setActiveDocs] = useState<any>(() => {
+    const saved = localStorage.getItem('tribuana_docs');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {}
+    }
+    return {
+      'docs-manifest': [
+        { id: 'MNF-2024-001', name: 'Manifest Pelayaran Jawa-Sumatera', date: '15 Mei 2026', size: '1.2 MB', type: 'PDF', status: 'Verified' },
+        { id: 'MNF-2024-002', name: 'Manifest Ekspor Batam-Singapore', date: '14 Mei 2026', size: '850 KB', type: 'Excel', status: 'Pending' },
+        { id: 'MNF-2024-003', name: 'Manifest Domestik Surabaya-Makassar', date: '12 Mei 2026', size: '2.1 MB', type: 'PDF', status: 'Verified' },
+      ],
+      'docs-bol': [
+        { id: 'BOL-55219', name: 'B/L - PT. Maju Bersama (JKT-SRB)', date: '16 Mei 2026', size: '450 KB', type: 'PDF', status: 'Verified' },
+        { id: 'BOL-55220', name: 'B/L - CV. Global Tekno (MDN-JKT)', date: '15 Mei 2026', size: '420 KB', type: 'PDF', status: 'Verified' },
+      ],
+      'docs-invoice': [
+        { id: 'INV-88210', name: 'Komersial Invoice #88210 - Indo Food', date: '16 Mei 2026', size: '120 KB', type: 'PDF', status: 'Paid' },
+        { id: 'INV-88211', name: 'Tagihan Layanan Logistik Q2', date: '10 Mei 2026', size: '310 KB', type: 'Excel', status: 'Overdue' },
+      ],
+      'docs-sj': [
+        { id: 'SJ-9901', name: 'Surat Jalan G-001 (Cakung - Priok)', date: '17 Mei 2026', size: '95 KB', type: 'PDF', status: 'In Transit' },
+        { id: 'SJ-9902', name: 'Surat Jalan G-002 (Balaraja)', date: '17 Mei 2026', size: '102 KB', type: 'PDF', status: 'Pending' },
+      ],
+      'docs-izin': [
+        { id: 'LIC-001', name: 'Izin Trayek Alur Laut Tribuana', date: 'Berlaku s/d 2028', size: '4.5 MB', type: 'PDF', status: 'Active' },
+        { id: 'LIC-002', name: 'Sertifikasi ISO 9001:2015 Logistik', date: 'Berlaku s/d 2027', size: '2.8 MB', type: 'PDF', status: 'Active' },
+        { id: 'LIC-003', name: 'Izin Bongkar Muat B3', date: 'Berlaku s/d 2026', size: '1.2 MB', type: 'PDF', status: 'Expired' },
+      ],
+    };
   });
 
-  const [docModal, setDocModal] = useState<{isOpen: boolean, mode: 'add' | 'edit' | 'view', data: any}>({
+  const [notification, setNotification] = useState<{show: boolean, message: string, type: 'success'|'error'}>({show: false, message: '', type: 'success'});
+
+  useEffect(() => {
+    localStorage.setItem('tribuana_docs', JSON.stringify(activeDocs));
+  }, [activeDocs]);
+
+  const showNotification = (message: string, type: 'success'|'error' = 'success') => {
+    setNotification({ show: true, message, type });
+    setTimeout(() => {
+      setNotification({ show: false, message: '', type: 'success' });
+    }, 3000);
+  };
+
+
+  const [docModal, setDocModal] = useState<{isOpen: boolean, mode: 'add' | 'edit' | 'view', data: any, previewUrl?: string | null}>({
     isOpen: false,
     mode: 'view',
-    data: null
+    data: null,
+    previewUrl: null
   });
 
   const [isExporting, setIsExporting] = useState<string | null>(null);
@@ -84,9 +110,16 @@ const Dashboard = () => {
           ...prev,
           [category]: prev[category].filter((d: any) => d.id !== doc.id)
         }));
+        showNotification('Dokumen berhasil dihapus!', 'success');
       }
       return;
     }
+
+    if (action === 'view') {
+      setDocModal({ isOpen: true, mode: action, data: doc || null });
+      return;
+    }
+
     setDocModal({ isOpen: true, mode: action, data: doc || null });
   };
 
@@ -106,24 +139,234 @@ const Dashboard = () => {
     if (docModal.mode === 'add') {
       setActiveDocs((prev: any) => ({
         ...prev,
-        [category]: [newDoc, ...prev[category]]
+        [category]: [newDoc, ...(prev[category] || [])]
       }));
+      showNotification('Dokumen baru berhasil ditambahkan!', 'success');
     } else {
       setActiveDocs((prev: any) => ({
         ...prev,
-        [category]: prev[category].map((d: any) => d.id === docModal.data.id ? newDoc : d)
+        [category]: (prev[category] || []).map((d: any) => d.id === docModal.data.id ? newDoc : d)
       }));
+      showNotification('Dokumen berhasil diperbarui!', 'success');
     }
     setDocModal({ ...docModal, isOpen: false });
   };
 
-  const handleExport = (format: 'PDF' | 'EXCEL') => {
+  const getBase64ImageFromUrl = async (imageUrl: string): Promise<string | null> => {
+    try {
+      const res = await fetch(imageUrl);
+      const blob = await res.blob();
+      return await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch(err) {
+      console.error(err);
+      return null;
+    }
+  };
+
+  const generatePdfInstance = async (docItem?: any, activeTitle: string = '', activeDataArray: any[] = []) => {
+    const doc = new jsPDF();
+    
+    let dataArray: any[] = [];
+    if (docItem) {
+      dataArray = [docItem];
+    } else {
+      dataArray = activeDataArray;
+    }
+
+    // ===== Corporate Header Styling =====
+    doc.setFillColor(255, 255, 255); // bg-white
+    doc.rect(0, 0, 210, 48, 'F');
+    
+    doc.setFillColor(253, 216, 53); // bg-brand-yellow
+    doc.rect(0, 48, 210, 3, 'F');
+    
+    const logoBase64 = await getBase64ImageFromUrl('https://i.imgur.com/QN8Pxlv.png');
+    if (logoBase64) {
+      doc.addImage(logoBase64, 'PNG', 14, 10, 26, 26);
+    } else {
+      // --- Abstract Corporate Logo ---
+      // Yellow top-left square
+      doc.setFillColor(253, 216, 53);
+      doc.rect(14, 15, 7, 7, 'F');
+      // White surrounding squares representing cargo boxes
+      doc.setFillColor(255, 255, 255);
+      doc.rect(22, 15, 7, 7, 'F');
+      doc.rect(14, 23, 7, 7, 'F');
+      doc.rect(22, 23, 7, 7, 'F');
+    }
+
+    doc.setTextColor(31, 41, 55);
+    doc.setFontSize(26);
+    doc.setFont("helvetica", "bold");
+    doc.text("TRIBUANA", 44, 23);
+    
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(75, 85, 99);
+    doc.text("PT TRIBUANA CARGO INDONESIA", 44, 29);
+    doc.setFontSize(9);
+    doc.text("International Freight Forwarder & Logistics Provider", 44, 34);
+
+    // Header Right Details
+    doc.setTextColor(107, 114, 128);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.text("TANGGAL CETAK", 145, 20);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(75, 85, 99);
+    doc.text(new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }), 145, 25);
+    
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(107, 114, 128);
+    doc.text("STATUS SISTEM", 145, 33);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(234, 179, 8); // text-yellow-500
+    doc.text("Terverifikasi & Resmi", 145, 38);
+
+    // ===== Title =====
+    doc.setTextColor(31, 41, 55);
+    doc.setFontSize(20);
+    doc.setFont("helvetica", "bold");
+    
+    let titleText = docItem ? `Detail Rekam Dokumen` : `Laporan Manajemen Dokumen`;
+    doc.text(titleText, 14, 68);
+    
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(110, 110, 110);
+    doc.text(docItem ? `ID Referensi: ${docItem.id}  —  Nama Form: ${docItem.name}` : `Kategori Modul: ${activeTitle}`, 14, 76);
+    
+    if (docItem) {
+       // ===== Detail Box =====
+       doc.setFillColor(249, 250, 251);
+       doc.setDrawColor(220, 220, 220);
+       doc.setLineWidth(0.5);
+       doc.roundedRect(14, 85, 182, 85, 4, 4, 'FD');
+       
+       doc.setTextColor(31, 41, 55);
+       doc.setFontSize(11);
+       
+       const labels = ['ID Dokumen', 'Nama Berkas', 'Kategori / Format', 'Status Validasi', 'Tanggal Diperbarui', 'Ukuran Berkas'];
+       const values = [docItem.id, docItem.name, docItem.type, docItem.status, docItem.date, docItem.size];
+       
+       for (let i = 0; i < labels.length; i++) {
+         // Zebra striping for lines
+         if (i % 2 === 0) {
+           doc.setFillColor(243, 244, 246);
+           doc.rect(15, 87 + (i * 13), 180, 13, 'F');
+         }
+         doc.setFont("helvetica", "bold");
+         doc.text(labels[i], 20, 95 + (i * 13));
+         doc.setFont("helvetica", "normal");
+         doc.text(`:   ${values[i]}`, 75, 95 + (i * 13));
+       }
+       
+       // Watermark/Footer text
+       doc.setFontSize(9);
+       doc.setTextColor(150, 150, 150);
+       doc.text("Dokumen ini valid dan diterbitkan oleh Sistem Logistik PT Tribuana Cargo Indonesia.", 14, 185);
+       doc.text("Segala bentuk pemalsuan terhadap dokumen ini dapat ditindak sesuai dengan peraturan yang berlaku.", 14, 190);
+
+    } else {
+      // ===== Table Styling =====
+      autoTable(doc, {
+        startY: 85,
+        head: [['ID Dokumen', 'Nama Berkas', 'Tanggal', 'Status', 'Tipe', 'Ukuran']],
+        body: dataArray.map((d: any) => [d.id, d.name, d.date, d.status, d.type, d.size]),
+        styles: { font: 'helvetica', fontSize: 9, cellPadding: 4 },
+        headStyles: { fillColor: [31, 41, 55], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
+        alternateRowStyles: { fillColor: [249, 250, 251] },
+        margin: { top: 85, left: 14, right: 14 }
+      });
+      
+      doc.setFontSize(9);
+      doc.setTextColor(150, 150, 150);
+      doc.text("Laporan ini valid dan diterbitkan oleh Sistem Logistik PT Tribuana Cargo Indonesia.", 14, (doc as any).lastAutoTable.finalY + 15);
+      doc.text("Segala bentuk perubahan data dapat dilacak melalui log aktivitas sistem internal.", 14, (doc as any).lastAutoTable.finalY + 20);
+    }
+    
+    return doc;
+  };
+
+  const handleExport = (format: 'PDF' | 'EXCEL', docItem?: any) => {
     setIsExporting(format);
-    // Simulated export delay
-    setTimeout(() => {
-      setIsExporting(null);
-      alert(`${format} berhasil di-generate dan siap diunduh!`);
-    }, 2000);
+    
+    setTimeout(async () => {
+      try {
+        const docTitles: any = {
+          'docs-manifest': 'Manifest Kapal (Ship Manifest)',
+          'docs-bol': 'Bill of Lading (B/L)',
+          'docs-invoice': 'Invoice & Faktur Komersial',
+          'docs-sj': 'Surat Jalan (Delivery Order)',
+          'docs-izin': 'Izin Operasional & Sertifikasi',
+        };
+        const activeTitle = docTitles[activeTab] || 'Dokumen ' + activeTab;
+
+        if (format === 'EXCEL') {
+          let dataArray: any[] = [];
+          if (docItem) {
+            dataArray = [docItem];
+          } else {
+            dataArray = activeDocs[activeTab] || [];
+          }
+          
+          const exportData = dataArray.map((d: any) => ({
+            'ID Dokumen': d.id,
+            'Nama Berkas': d.name,
+            'Tanggal Dibuat/Update': d.date,
+            'Status': d.status,
+            'Tipe Format': d.type,
+            'Ukuran Berkas': d.size
+          }));
+
+          const worksheet = XLSX.utils.json_to_sheet([]);
+          XLSX.utils.sheet_add_aoa(worksheet, [
+            ["PT TRIBUANA CARGO INDONESIA"],
+            ["International Freight Forwarder & Logistics Provider"],
+            [],
+            [docItem ? `Detail Dokumen: ${docItem.id}` : `Laporan Dokumen: ${activeTitle}`],
+            [`Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}`],
+            []
+          ], { origin: "A1" });
+
+          XLSX.utils.sheet_add_json(worksheet, exportData, { origin: "A7" });
+          
+          worksheet['!cols'] = [
+            { wch: 20 },
+            { wch: 45 },
+            { wch: 20 },
+            { wch: 15 },
+            { wch: 15 },
+            { wch: 15 },
+          ];
+
+          const workbook = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(workbook, worksheet, "Dokumen");
+          
+          let fileName = docItem ? `${docItem.id}.xlsx` : `${activeTitle}.xlsx`;
+          XLSX.writeFile(workbook, fileName);
+          
+          showNotification(`Excel berhasil diunduh!`, 'success');
+        } else if (format === 'PDF') {
+          const doc = await generatePdfInstance(docItem, activeTitle, activeDocs[activeTab]);
+          
+          let fileName = docItem ? `${docItem.id}.pdf` : `${activeTitle}.pdf`;
+          doc.save(fileName);
+          
+          showNotification(`PDF berhasil diunduh!`, 'success');
+        }
+      } catch (err) {
+        console.error(err);
+        showNotification(`Gagal mengunduh ${format}`, 'error');
+      } finally {
+        setIsExporting(null);
+      }
+    }, 500);
   };
 
   const menuItems = [
@@ -347,7 +590,7 @@ const Dashboard = () => {
                          <td className="px-6 py-4 text-xs text-gray-500">{row.driver}</td>
                          <td className="px-6 py-4 text-xs font-bold text-gray-500">{row.eta}</td>
                          <td className="px-6 py-4 text-right">
-                           <button className="text-gray-400 hover:text-brand-yellow opacity-0 group-hover:opacity-100 transition-opacity">
+                           <button className="text-gray-400 hover:text-brand-yellow transition-opacity">
                              <ChevronRight className="w-5 h-5" />
                            </button>
                          </td>
@@ -823,7 +1066,7 @@ const Dashboard = () => {
                             </span>
                          </td>
                          <td className="px-6 py-4 text-right">
-                            <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="flex items-center justify-end gap-1">
                                <button 
                                   onClick={() => handleDocAction('view', doc)}
                                   title="Lihat" 
@@ -845,7 +1088,11 @@ const Dashboard = () => {
                                 >
                                   <Trash2 className="w-4 h-4" />
                                </button>
-                               <button title="Unduh" className="p-1.5 text-gray-400 hover:text-charcoal transition-colors">
+                               <button 
+                                  onClick={() => handleExport(doc.type === 'Excel' ? 'EXCEL' : 'PDF', doc)}
+                                  title="Unduh" 
+                                  className="p-1.5 text-gray-400 hover:text-charcoal transition-colors"
+                               >
                                   <Download className="w-4 h-4" />
                                </button>
                             </div>
@@ -965,12 +1212,12 @@ const Dashboard = () => {
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         <div className="h-20 flex items-center px-6 border-b border-gray-100">
-          <div className="flex items-center gap-2">
-            <div className="w-12 h-12 flex items-center justify-center overflow-hidden">
+          <div className="flex items-center gap-3">
+            <div className="w-16 h-16 flex items-center justify-center overflow-hidden">
               <img src="https://i.imgur.com/QN8Pxlv.png" alt="PT TRIBUANA CARGO INDONESIA" className="w-full h-full object-contain" />
             </div>
-            <div className="flex flex-col">
-              <span className="font-bold text-sm tracking-tight text-charcoal leading-none">TRIBUANA</span>
+            <div className="flex flex-col gap-0.5">
+              <span className="font-bold text-base tracking-tight text-charcoal leading-none">TRIBUANA</span>
               <span className="font-bold text-[10px] text-gray-400 tracking-tighter leading-none">CARGO INDONESIA</span>
             </div>
           </div>
@@ -1131,9 +1378,9 @@ const Dashboard = () => {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-2xl bg-white shadow-2xl rounded-sm overflow-hidden"
+              className="relative w-full max-w-2xl bg-white shadow-2xl rounded-sm overflow-y-auto max-h-[90dvh]"
             >
-              <div className="h-16 bg-charcoal flex items-center justify-between px-6">
+              <div className="h-16 bg-charcoal flex items-center justify-between px-4 sm:px-6 sticky top-0 z-10">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-brand-yellow rounded-sm flex items-center justify-center text-white">
                     <Package className="w-5 h-5" />
@@ -1276,33 +1523,113 @@ const Dashboard = () => {
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="relative bg-white w-full max-w-lg rounded-sm shadow-2xl overflow-hidden"
+              className="relative bg-white w-full max-w-2xl sm:rounded-sm shadow-2xl overflow-y-auto max-h-[90vh]"
             >
-              <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                <h3 className="text-lg font-bold text-charcoal uppercase tracking-widest flex items-center gap-2 font-display">
+              <div className="p-4 sm:p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 sticky top-0 z-10">
+                <h3 className="text-base sm:text-lg font-bold text-charcoal uppercase tracking-widest flex items-center gap-2 font-display">
                   {docModal.mode === 'add' ? <Plus className="w-5 h-5 text-brand-yellow" /> : 
                    docModal.mode === 'edit' ? <Edit className="w-5 h-5 text-brand-yellow" /> : 
                    <Eye className="w-5 h-5 text-brand-yellow" />}
                   {docModal.mode === 'add' ? 'Tambah Dokumen' : 
                    docModal.mode === 'edit' ? 'Edit Dokumen' : 'Detail Dokumen'}
                 </h3>
-                <button onClick={() => setDocModal({ ...docModal, isOpen: false })} className="text-gray-400 hover:text-charcoal p-1">
-                  <X className="w-6 h-6" />
+                <button onClick={() => setDocModal({ ...docModal, isOpen: false })} className="text-gray-400 hover:text-charcoal p-1 bg-white rounded-full">
+                  <X className="w-5 h-5 sm:w-6 sm:h-6" />
                 </button>
               </div>
               
-              <form onSubmit={handleSaveDoc} className="p-6 space-y-5">
-                <div className="grid grid-cols-1 gap-5">
+              {docModal.mode === 'view' ? (
+                <div className="p-4 sm:p-6 space-y-4">
+                  <div className="bg-white sm:rounded-sm w-full border border-gray-200 shadow-sm overflow-hidden text-left relative">
+                    {/* Header */}
+                    <div className="bg-white text-charcoal border-b-4 border-brand-yellow p-4 sm:p-6 relative">
+                       <div className="flex flex-col sm:flex-row justify-between items-start gap-4 sm:gap-0">
+                         <div className="flex items-center gap-3 sm:gap-4">
+                           {/* Logo */}
+                           <div className="w-10 h-10 sm:w-14 sm:h-14 shrink-0">
+                             <img src="https://i.imgur.com/QN8Pxlv.png" alt="Tribuana Cargo Logo" className="w-full h-full object-contain" />
+                           </div>
+                           <div className="flex flex-col justify-center">
+                             <h1 className="text-lg sm:text-2xl font-bold tracking-widest leading-none text-charcoal">TRIBUANA</h1>
+                             <p className="text-[9px] sm:text-[11px] font-medium text-gray-500 mt-1 sm:mt-1.5">PT TRIBUANA CARGO INDONESIA</p>
+                             <p className="hidden sm:block text-[9px] text-gray-400 mt-0.5">International Freight Forwarder & Logistics Provider</p>
+                           </div>
+                         </div>
+                         <div className="text-left sm:text-right w-full sm:w-auto border-t sm:border-0 border-gray-100 pt-3 sm:pt-0 mt-1 sm:mt-0 flex flex-row sm:flex-col justify-between sm:justify-start">
+                           <div>
+                             <p className="text-[8px] font-bold text-gray-400 uppercase">Tanggal Cetak</p>
+                             <p className="text-[10px] text-gray-600 sm:mb-2">{new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                           </div>
+                           <div className="text-right">
+                             <p className="text-[8px] font-bold text-gray-400 uppercase">Status Sistem</p>
+                             <p className="text-[10px] font-medium text-yellow-600">Terverifikasi & Resmi</p>
+                           </div>
+                         </div>
+                       </div>
+                    </div>
+                    
+                    {/* Body */}
+                    <div className="p-4 sm:p-6 mt-2 sm:mt-4">
+                       <h2 className="text-base sm:text-lg font-bold text-charcoal">Detail Rekam Dokumen</h2>
+                       <p className="text-[10px] sm:text-xs text-gray-500 mb-4 sm:mb-6">ID Referensi: {docModal.data?.id} — Nama Form: {docModal.data?.name}</p>
+                       
+                       <div className="border border-gray-200 rounded-md overflow-hidden text-sm bg-gray-50">
+                          {[
+                            { label: 'ID Dokumen', value: docModal.data?.id },
+                            { label: 'Nama Berkas', value: docModal.data?.name },
+                            { label: 'Kategori / Format', value: docModal.data?.type },
+                            { label: 'Status Validasi', value: docModal.data?.status },
+                            { label: 'Tanggal Diperbarui', value: docModal.data?.date },
+                            { label: 'Ukuran Berkas', value: docModal.data?.size },
+                          ].map((item, idx) => (
+                             <div key={idx} className={`flex flex-col sm:flex-row sm:items-center px-3 sm:px-4 py-2 sm:py-3 border-b border-gray-100 last:border-0 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
+                               <div className="w-full sm:w-1/3 font-bold text-charcoal text-[10px] sm:text-xs mb-0.5 sm:mb-0">{item.label}</div>
+                               <div className="w-full sm:w-2/3 text-gray-700 text-xs sm:text-xs font-medium sm:font-normal"><span className="hidden sm:inline">: </span>{item.value}</div>
+                             </div>
+                          ))}
+                       </div>
+                       
+                       <div className="mt-6 sm:mt-8 text-[8px] sm:text-[9px] text-gray-400 leading-relaxed border-t border-gray-100 pt-4">
+                         <p>Dokumen ini valid dan diterbitkan oleh Sistem Logistik PT Tribuana Cargo Indonesia.</p>
+                         <p>Segala bentuk pemalsuan terhadap dokumen ini dapat ditindak sesuai dengan peraturan yang berlaku.</p>
+                       </div>
+                    </div>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <button 
+                      type="button"
+                      onClick={() => setDocModal({ ...docModal, isOpen: false })}
+                      className="flex-1 px-6 py-3 border border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-widest rounded-sm hover:bg-soft-gray transition-colors order-2 sm:order-1"
+                    >
+                      Batal
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        setDocModal({ ...docModal, isOpen: false });
+                        handleExport(docModal.data?.type === 'Excel' ? 'EXCEL' : 'PDF', docModal.data);
+                      }}
+                      className="flex-1 px-6 py-3 bg-charcoal text-white text-xs font-bold uppercase tracking-widest rounded-sm hover:bg-gray-800 transition-colors shadow-lg order-1 sm:order-2"
+                    >
+                      <div className="flex items-center justify-center gap-2">
+                        <Download className="w-4 h-4" /> Unduh
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+              <form onSubmit={handleSaveDoc} className="p-4 sm:p-6 space-y-4 sm:space-y-5">
+                <div className="grid grid-cols-1 gap-4 sm:gap-5">
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">ID Dokumen</label>
                     <input 
                       name="id"
                       required
-                      readOnly={docModal.mode === 'view' || docModal.mode === 'edit'}
+                      readOnly={docModal.mode === 'edit'}
                       defaultValue={docModal.data?.id}
                       placeholder="e.g. DOC-2024-001"
-                      className={`w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-sm text-sm focus:border-brand-yellow focus:bg-white transition-all outline-none 
-                        ${(docModal.mode === 'view' || docModal.mode === 'edit') ? 'text-gray-500 cursor-not-allowed' : 'text-charcoal'}`}
+                      className={`w-full px-3 py-2.5 sm:px-4 bg-gray-50 border border-gray-200 rounded-sm text-sm focus:border-brand-yellow focus:bg-white transition-all outline-none 
+                        ${docModal.mode === 'edit' ? 'text-gray-500 cursor-not-allowed' : 'text-charcoal'}`}
                     />
                   </div>
                   <div className="space-y-1">
@@ -1310,22 +1637,18 @@ const Dashboard = () => {
                     <input 
                       name="name"
                       required
-                      readOnly={docModal.mode === 'view'}
                       defaultValue={docModal.data?.name}
                       placeholder="e.g. Manifest Jakarta"
-                      className={`w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-sm text-sm focus:border-brand-yellow focus:bg-white transition-all outline-none 
-                        ${docModal.mode === 'view' ? 'text-gray-500' : 'text-charcoal'}`}
+                      className="w-full px-3 py-2.5 sm:px-4 bg-gray-50 border border-gray-200 rounded-sm text-sm focus:border-brand-yellow focus:bg-white transition-all outline-none text-charcoal"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1">
                       <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Format</label>
                       <select 
                         name="type"
-                        disabled={docModal.mode === 'view'}
                         defaultValue={docModal.data?.type || 'PDF'}
-                        className={`w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-sm text-sm focus:border-brand-yellow focus:bg-white transition-all outline-none 
-                          ${docModal.mode === 'view' ? 'text-gray-500' : 'text-charcoal'}`}
+                        className="w-full px-3 py-2.5 sm:px-4 bg-gray-50 border border-gray-200 rounded-sm text-sm focus:border-brand-yellow focus:bg-white transition-all outline-none text-charcoal"
                       >
                         <option value="PDF">PDF Document</option>
                         <option value="Excel">Excel Spreadsheet</option>
@@ -1335,10 +1658,8 @@ const Dashboard = () => {
                       <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Status</label>
                       <select 
                         name="status"
-                        disabled={docModal.mode === 'view'}
                         defaultValue={docModal.data?.status || 'Pending'}
-                        className={`w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-sm text-sm focus:border-brand-yellow focus:bg-white transition-all outline-none 
-                          ${docModal.mode === 'view' ? 'text-gray-500' : 'text-charcoal'}`}
+                        className="w-full px-3 py-2.5 sm:px-4 bg-gray-50 border border-gray-200 rounded-sm text-sm focus:border-brand-yellow focus:bg-white transition-all outline-none text-charcoal"
                       >
                         <option value="Pending">Pending</option>
                         <option value="Verified">Verified</option>
@@ -1351,14 +1672,14 @@ const Dashboard = () => {
                     </div>
                   </div>
                   {docModal.mode !== 'add' && (
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-1">
                         <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Ukuran</label>
                         <input 
                           name="size"
                           readOnly
                           defaultValue={docModal.data?.size}
-                          className="w-full px-4 py-2.5 bg-gray-100 border border-gray-200 rounded-sm text-sm text-gray-500 outline-none"
+                          className="w-full px-3 py-2.5 sm:px-4 bg-gray-100 border border-gray-200 rounded-sm text-sm text-gray-500 outline-none"
                         />
                       </div>
                       <div className="space-y-1">
@@ -1367,42 +1688,30 @@ const Dashboard = () => {
                           name="date"
                           readOnly
                           defaultValue={docModal.data?.date}
-                          className="w-full px-4 py-2.5 bg-gray-100 border border-gray-200 rounded-sm text-sm text-gray-500 outline-none"
+                          className="w-full px-3 py-2.5 sm:px-4 bg-gray-100 border border-gray-200 rounded-sm text-sm text-gray-500 outline-none"
                         />
                       </div>
                     </div>
                   )}
                 </div>
 
-                <div className="pt-4 flex gap-3">
+                <div className="pt-4 flex flex-col sm:flex-row gap-3">
                   <button 
                     type="button"
                     onClick={() => setDocModal({ ...docModal, isOpen: false })}
-                    className="flex-1 px-6 py-3 border border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-widest rounded-sm hover:bg-soft-gray transition-colors"
+                    className="flex-1 px-6 py-3 border border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-widest rounded-sm hover:bg-soft-gray transition-colors order-2 sm:order-1"
                   >
                     Batal
                   </button>
-                  {docModal.mode !== 'view' && (
-                    <button 
-                      type="submit"
-                      className="flex-1 px-6 py-3 bg-brand-yellow text-white text-xs font-bold uppercase tracking-widest rounded-sm hover:bg-brand-yellow-hover transition-colors shadow-lg shadow-brand-yellow/20"
-                    >
-                      {docModal.mode === 'add' ? 'Simpan' : 'Perbarui'}
-                    </button>
-                  )}
-                  {docModal.mode === 'view' && (
-                    <button 
-                      type="button"
-                      onClick={() => handleExport('PDF')}
-                      className="flex-1 px-6 py-3 bg-charcoal text-white text-xs font-bold uppercase tracking-widest rounded-sm hover:bg-gray-800 transition-colors shadow-lg"
-                    >
-                      <div className="flex items-center justify-center gap-2">
-                        <Printer className="w-4 h-4" /> Cetak
-                      </div>
-                    </button>
-                  )}
+                  <button 
+                    type="submit"
+                    className="flex-1 px-6 py-3 bg-brand-yellow text-white text-xs font-bold uppercase tracking-widest rounded-sm hover:bg-brand-yellow-hover transition-colors shadow-lg shadow-brand-yellow/20 order-1 sm:order-2"
+                  >
+                    {docModal.mode === 'add' ? 'Simpan' : 'Perbarui'}
+                  </button>
                 </div>
               </form>
+              )}
             </motion.div>
           </div>
         )}
@@ -1438,6 +1747,25 @@ const Dashboard = () => {
               </div>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* Global Toast Notification */}
+      <AnimatePresence>
+        {notification.show && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            className="fixed bottom-6 right-6 z-[200] flex items-center gap-3 bg-charcoal text-white px-5 py-3 rounded-sm shadow-xl"
+          >
+            {notification.type === 'success' ? (
+              <CheckCircle2 className="w-5 h-5 text-brand-yellow" />
+            ) : (
+              <X className="w-5 h-5 text-red-500" />
+            )}
+            <span className="text-sm font-medium tracking-wide">{notification.message}</span>
+          </motion.div>
         )}
       </AnimatePresence>
 

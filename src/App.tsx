@@ -198,11 +198,11 @@ const Navbar = () => {
       isScrolled ? "bg-white/95 backdrop-blur-sm border-gray-100 py-3 shadow-sm" : "bg-white border-transparent py-5"
     )}>
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-10 h-10 flex items-center justify-center overflow-hidden">
+        <div className="flex items-center gap-3">
+          <div className="w-14 h-14 flex items-center justify-center overflow-hidden">
             <img src="https://i.imgur.com/QN8Pxlv.png" alt="PT TRIBUANA CARGO INDONESIA" className="w-full h-full object-contain" />
           </div>
-          <span className="font-bold text-base tracking-tight">TRIBUANA CARGO</span>
+          <span className="font-bold text-lg tracking-tight">TRIBUANA CARGO</span>
         </div>
 
         {/* Desktop Nav */}
@@ -720,11 +720,11 @@ const Footer = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12">
           
           <div className="col-span-1 md:col-span-2 lg:col-span-1">
-             <div className="flex items-center gap-2 mb-6">
-                <div className="w-10 h-10 flex items-center justify-center overflow-hidden">
+             <div className="flex items-center gap-3 mb-6">
+                <div className="w-16 h-16 flex items-center justify-center overflow-hidden">
                   <img src="https://i.imgur.com/QOmjIBB.png" alt="PT TRIBUANA CARGO INDONESIA" className="w-full h-full object-contain" />
                 </div>
-                <span className="font-bold text-lg tracking-tight">TRIBUANA CARGO</span>
+                <span className="font-bold text-xl tracking-tight">TRIBUANA CARGO</span>
               </div>
               <p className="text-gray-400 text-sm font-light leading-relaxed mb-6">
                 {t.footer.desc}
