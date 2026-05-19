@@ -37,6 +37,7 @@ const Login = () => {
     e.preventDefault();
     if (email === 'admin@gmail.com' && password === 'admin123') {
       setError('');
+      localStorage.setItem('isAuthenticated', 'true');
       navigate('/dashboard');
     } else {
       setError('Email atau password salah');

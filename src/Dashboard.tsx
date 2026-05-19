@@ -72,6 +72,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
+    localStorage.removeItem('isAuthenticated');
     navigate('/login');
   };
 

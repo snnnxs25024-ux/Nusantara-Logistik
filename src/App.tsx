@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import { 
   Ship, Plane, Package, Truck, Globe, ShieldCheck, Clock, 
   MapPin, Menu, X, ArrowRight, BarChart3, Users, Building, ChevronRight, Anchor, ChevronDown, Search, CheckCircle2, Clock3
@@ -35,10 +35,8 @@ const deliveryData = [
 
 // 1. Loading Screen
 const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
-  const { t } = useLanguage();
-  
   useEffect(() => {
-    const timer = setTimeout(onComplete, 2500);
+    const timer = setTimeout(onComplete, 4000);
     return () => clearTimeout(timer);
   }, [onComplete]);
 
@@ -49,30 +47,73 @@ const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.8, ease: "easeInOut" }}
     >
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="flex flex-col items-center"
-      >
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 flex items-center justify-center overflow-hidden">
-            <img src="https://i.imgur.com/XkKLc6z.png" alt="PT TRIBUANA CARGO INDONESIA" className="w-full h-full object-contain" />
+      <div className="w-full max-w-sm px-8 flex flex-col items-center">
+        {/* LOGO FADE IN */}
+        <motion.div
+           initial={{ opacity: 0, y: 15 }}
+           animate={{ opacity: 1, y: 0 }}
+           transition={{ duration: 0.8, ease: "easeOut" }}
+           className="flex flex-col items-center justify-center mb-10"
+        >
+          <div className="w-16 h-16 flex items-center justify-center overflow-hidden mb-6">
+            <img src="https://i.imgur.com/XkKLc6z.png" alt="PT TRIBUANA CARGO INDONESIA Logo" className="w-full h-full object-contain" />
           </div>
-          <h1 className="text-xl font-bold tracking-tight text-charcoal">PT TRIBUANA CARGO INDONESIA</h1>
-        </div>
+          <h1 className="text-xl font-bold tracking-widest text-charcoal font-display uppercase">TRIBUANA CARGO</h1>
+          <p className="text-[10px] text-gray-400 font-bold tracking-[0.2em] uppercase mt-2">PT Tribuana Cargo Indonesia</p>
+        </motion.div>
         
-        {/* Loading Bar */}
-        <div className="w-48 h-[2px] bg-gray-200 overflow-hidden relative">
-          <motion.div 
-            className="absolute top-0 left-0 h-full bg-brand-yellow"
-            initial={{ width: "0%" }}
-            animate={{ width: "100%" }}
-            transition={{ duration: 2, ease: "easeInOut" }}
-          />
+        {/* ANIMATION AREA */}
+        <div className="w-full relative h-[1px] bg-gray-100 flex items-end">
+           {/* Line Draw */}
+           <motion.div 
+              className="absolute top-0 left-0 h-[2px] bg-brand-yellow origin-left"
+              initial={{ width: "0%" }}
+              animate={{ width: "100%" }}
+              transition={{ duration: 2.5, ease: "easeInOut", delay: 0.2 }}
+           />
+           
+           {/* Truck Movement */}
+           <motion.div
+              className="absolute bottom-[2px] transform -translate-x-1/2"
+              initial={{ left: "0%", opacity: 0 }}
+              animate={{ left: "100%", opacity: [0, 1, 1, 0] }}
+              transition={{ 
+                 left: { duration: 3.2, ease: [0.25, 0.1, 0.25, 1], delay: 0.5 },
+                 opacity: { duration: 3.2, delay: 0.5, times: [0, 0.1, 0.9, 1] }
+              }}
+           >
+              <svg width="40" height="16" viewBox="0 0 40 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                 {/* Cargo Container */}
+                 <path d="M2 3H24V13H2Z" fill="#111827"/>
+                 {/* Cabin */}
+                 <path d="M26 5C26 4.44772 26.4477 4 27 4H30.5L35 8V13H26V5Z" fill="#F7F9FC" stroke="#111827" strokeWidth="1.5" strokeLinejoin="round"/>
+                 <path d="M31 5V8H34.5" stroke="#111827" strokeWidth="1" strokeLinejoin="round"/>
+                 {/* Wheels */}
+                 <circle cx="6" cy="13" r="1.5" fill="#111827"/>
+                 <circle cx="20" cy="13" r="1.5" fill="#111827"/>
+                 <circle cx="31" cy="13" r="1.5" fill="#111827"/>
+                 {/* Connection Link */}
+                 <rect x="24" y="10" width="2" height="1.5" fill="#111827"/>
+              </svg>
+           </motion.div>
         </div>
-        <p className="mt-4 text-sm text-gray-500 font-medium tracking-widest uppercase text-xs">{t.loading.starting}</p>
-      </motion.div>
+
+        {/* LOADING TEXT */}
+        <motion.div 
+           className="mt-8 flex items-center justify-center gap-1 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]"
+           initial={{ opacity: 0 }}
+           animate={{ opacity: 1 }}
+           transition={{ duration: 0.8, delay: 1.0 }}
+        >
+           Mempersiapkan Sistem Logistik
+           <span className="flex w-3">
+             <motion.span animate={{ opacity: [0, 1, 0] }} transition={{ duration: 1.5, repeat: Infinity, ease: "linear", delay: 0 }}>.</motion.span>
+             <motion.span animate={{ opacity: [0, 1, 0] }} transition={{ duration: 1.5, repeat: Infinity, ease: "linear", delay: 0.2 }}>.</motion.span>
+             <motion.span animate={{ opacity: [0, 1, 0] }} transition={{ duration: 1.5, repeat: Infinity, ease: "linear", delay: 0.4 }}>.</motion.span>
+           </span>
+        </motion.div>
+
+      </div>
     </motion.div>
   );
 };
@@ -741,14 +782,46 @@ const Footer = () => {
 
 const AppContent = () => {
   const [loading, setLoading] = useState(true);
+  const [isPWA, setIsPWA] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if PWA mode
+    const checkIsPWA = () => {
+      return window.matchMedia('(display-mode: standalone)').matches || 
+             ('standalone' in navigator && (navigator as any).standalone) || 
+             document.referrer.includes('android-app://');
+    };
+    
+    const standalone = checkIsPWA();
+    setIsPWA(standalone);
+    
+    if (!standalone) {
+      // In browser mode, skip loading screen and show landing directly
+      setLoading(false);
+    }
+  }, []);
+
+  const handleLoadingComplete = () => {
+    setLoading(false);
+    // In PWA, auto navigate after splash screen
+    if (isPWA) {
+      const isAuth = localStorage.getItem('isAuthenticated') === 'true';
+      if (isAuth) {
+        navigate('/dashboard', { replace: true });
+      } else {
+        navigate('/login', { replace: true });
+      }
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
       <AnimatePresence>
-        {loading && <LoadingScreen onComplete={() => setLoading(false)} />}
+        {loading && <LoadingScreen onComplete={handleLoadingComplete} />}
       </AnimatePresence>
       
-      {!loading && (
+      {!loading && !isPWA && (
         <motion.div
            initial={{ opacity: 0 }}
            animate={{ opacity: 1 }}
