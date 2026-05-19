@@ -966,7 +966,7 @@ const Dashboard = () => {
         <div className="h-20 flex items-center px-6 border-b border-gray-100">
           <div className="flex items-center gap-2">
             <div className="w-12 h-12 flex items-center justify-center overflow-hidden">
-              <img src="https://i.imgur.com/qdxsvsw.png" alt="PT TRIBUANA CARGO INDONESIA" className="w-full h-full object-contain" />
+              <img src="https://i.imgur.com/QN8Pxlv.png" alt="PT TRIBUANA CARGO INDONESIA" className="w-full h-full object-contain" />
             </div>
             <div className="flex flex-col">
               <span className="font-bold text-sm tracking-tight text-charcoal leading-none">TRIBUANA</span>
