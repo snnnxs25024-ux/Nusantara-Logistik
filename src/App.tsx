@@ -63,91 +63,37 @@ const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
         </motion.div>
         
         {/* ANIMATION AREA */}
-        <div className="w-full relative h-[140px] flex items-center justify-center overflow-visible mt-2 mb-4">
+        <div className="w-full relative h-[1px] bg-gray-100 flex items-end">
+           {/* Line Draw */}
+           <motion.div 
+              className="absolute top-0 left-0 h-[2px] bg-brand-yellow origin-left"
+              initial={{ width: "0%" }}
+              animate={{ width: "100%" }}
+              transition={{ duration: 2.5, ease: "easeInOut", delay: 0.2 }}
+           />
            
-           {/* Ship coming towards camera */}
+           {/* Truck Movement */}
            <motion.div
-              className="relative flex flex-col items-center"
-              initial={{ scale: 0.4, y: 30, opacity: 0 }}
-              animate={{ scale: [0.4, 1.2, 1.4], y: [30, 0, -10], opacity: [0, 1, 0] }}
-              transition={{ duration: 3.5, ease: "easeIn", delay: 0.3 }}
+              className="absolute bottom-[2px] transform -translate-x-1/2"
+              initial={{ left: "0%", opacity: 0 }}
+              animate={{ left: "100%", opacity: [0, 1, 1, 0] }}
+              transition={{ 
+                 left: { duration: 3.2, ease: [0.25, 0.1, 0.25, 1], delay: 0.5 },
+                 opacity: { duration: 3.2, delay: 0.5, times: [0, 0.1, 0.9, 1] }
+              }}
            >
-              {/* Smoke particles */}
-              <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-12 flex justify-center pointer-events-none">
-                 {[0, 1, 2, 3].map((i) => (
-                   <motion.div
-                     key={i}
-                     className="absolute bottom-0 w-3 h-3 bg-gray-200/80 rounded-full blur-[1px]"
-                     initial={{ opacity: 0, scale: 0.5, y: 0, x: 0 }}
-                     animate={{ 
-                       y: [-10, -50 - (i * 10)],
-                       x: [0, (i % 2 === 0 ? 1 : -1) * (15 + i * 5)],
-                       scale: [0.5, 3],
-                       opacity: [0, 0.7, 0]
-                     }}
-                     transition={{ duration: 2, repeat: Infinity, delay: 0.3 + (i * 0.4) }}
-                   />
-                 ))}
-              </div>
-              
-              {/* SVG Front-facing Cargo Ship */}
-              <svg width="100" height="80" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="z-10 drop-shadow-2xl relative mt-4">
-                 {/* Bow Wave / Water spray */}
-                 <motion.path 
-                   d="M25 68 Q50 82 75 68" 
-                   stroke="#93C5FD" 
-                   strokeWidth="3"
-                   fill="none"
-                   strokeLinecap="round"
-                   animate={{ opacity: [0.2, 0.9, 0.2], scaleX: [0.8, 1.3, 0.8], y: [0, 2, 0] }}
-                   transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                 />
-                 <motion.path 
-                   d="M15 62 Q50 78 85 62" 
-                   stroke="#DBEAFE" 
-                   strokeWidth="2"
-                   fill="none"
-                   strokeLinecap="round"
-                   animate={{ opacity: [0.1, 0.6, 0.1], scaleX: [0.9, 1.4, 0.9], y: [0, 3, 0] }}
-                   transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.2 }}
-                 />
-                 
-                 {/* Hull base */}
-                 <path d="M22 45 L38 70 L62 70 L78 45 Z" fill="#1F2937" />
-                 {/* Bulbous bow hint */}
-                 <path d="M45 70 L50 76 L55 70 Z" fill="#111827" />
-                 {/* Plimsol line / Accent */}
-                 <path d="M23 45 L77 45" stroke="#EAB308" strokeWidth="2.5" />
-                 
-                 {/* Superstructure */}
-                 <path d="M35 44 L35 22 L65 22 L65 44 Z" fill="#F8FAFC" />
-                 {/* Bridge Wing */}
-                 <path d="M30 32 L35 32 L35 27 L30 27 Z" fill="#F8FAFC" />
-                 <path d="M70 32 L65 32 L65 27 L70 27 Z" fill="#F8FAFC" />
-                 
-                 {/* Bridge windows */}
-                 <rect x="38" y="25" width="6" height="5" fill="#94A3B8" />
-                 <rect x="47" y="25" width="6" height="5" fill="#94A3B8" />
-                 <rect x="56" y="25" width="6" height="5" fill="#94A3B8" />
-                 
-                 {/* Funnel/Cerobong */}
-                 <path d="M45 22 L45 8 L55 8 L55 22 Z" fill="#EAB308" />
-                 {/* Funnel top stripe */}
-                 <rect x="45" y="8" width="10" height="4" fill="#111827" />
-                 
-                 {/* Cargo Containers */}
-                 {/* Tier 1 */}
-                 <rect x="25" y="40" width="12" height="4" fill="#3B82F6" />
-                 <rect x="38" y="40" width="24" height="4" fill="#10B981" />
-                 <rect x="63" y="40" width="12" height="4" fill="#EF4444" />
-                 
-                 {/* Tier 2 */}
-                 <rect x="26" y="35" width="18" height="4" fill="#F59E0B" />
-                 <rect x="45" y="35" width="10" height="4" fill="#3B82F6" />
-                 <rect x="56" y="35" width="18" height="4" fill="#8B5CF6" />
-                 
-                 {/* Tier 3 (Middle) */}
-                 <rect x="40" y="30" width="20" height="4" fill="#EC4899" />
+              <svg width="40" height="16" viewBox="0 0 40 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                 {/* Cargo Container */}
+                 <path d="M2 3H24V13H2Z" fill="#111827"/>
+                 {/* Cabin */}
+                 <path d="M26 5C26 4.44772 26.4477 4 27 4H30.5L35 8V13H26V5Z" fill="#F7F9FC" stroke="#111827" strokeWidth="1.5" strokeLinejoin="round"/>
+                 <path d="M31 5V8H34.5" stroke="#111827" strokeWidth="1" strokeLinejoin="round"/>
+                 {/* Wheels */}
+                 <circle cx="6" cy="13" r="1.5" fill="#111827"/>
+                 <circle cx="20" cy="13" r="1.5" fill="#111827"/>
+                 <circle cx="31" cy="13" r="1.5" fill="#111827"/>
+                 {/* Connection Link */}
+                 <rect x="24" y="10" width="2" height="1.5" fill="#111827"/>
               </svg>
            </motion.div>
         </div>
