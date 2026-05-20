@@ -349,14 +349,33 @@ const Dashboard = () => {
           XLSX.utils.book_append_sheet(workbook, worksheet, "Dokumen");
           
           let fileName = docItem ? `${docItem.id}.xlsx` : `${activeTitle}.xlsx`;
-          XLSX.writeFile(workbook, fileName);
+          
+          const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+          const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
+          const url = window.URL.createObjectURL(data);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = fileName;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
           
           showNotification(`Excel berhasil diunduh!`, 'success');
         } else if (format === 'PDF') {
           const doc = await generatePdfInstance(docItem, activeTitle, activeDocs[activeTab]);
           
           let fileName = docItem ? `${docItem.id}.pdf` : `${activeTitle}.pdf`;
-          doc.save(fileName);
+          
+          const blob = doc.output('blob');
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = fileName;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
           
           showNotification(`PDF berhasil diunduh!`, 'success');
         }
