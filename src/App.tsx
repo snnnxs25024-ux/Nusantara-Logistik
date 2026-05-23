@@ -14,6 +14,7 @@ import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { Language } from './translations';
 import Login from './Login';
 import Dashboard from './Dashboard';
+import { CookieConsent } from './components/CookieConsent';
 
 // --- DATA ---
 const deliveryData = [
@@ -858,6 +859,7 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
+        <CookieConsent />
       </BrowserRouter>
     </LanguageProvider>
   )
