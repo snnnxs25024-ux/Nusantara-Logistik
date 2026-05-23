@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowLeft, Mail, Lock, LogIn, Anchor, KeyRound, Send, UserPlus, FileText, Phone, CreditCard, Building, MapPin, User, FileDigit, Eye, EyeOff } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 const Login = () => {
   const [view, setView] = useState<'login' | 'forgot-password' | 'register'>('login');
@@ -10,7 +11,9 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [isResetSent, setIsResetSent] = useState(false);
+  const [isCaptchaVerified, setIsCaptchaVerified] = useState(false);
 
   // Register state
   const [fullName, setFullName] = useState('');
@@ -33,11 +36,26 @@ const Login = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const isAuth = localStorage.getItem('isAuthenticated') === 'true' || sessionStorage.getItem('isAuthenticated') === 'true';
+    if (isAuth) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [navigate]);
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isCaptchaVerified) {
+      setError('Harap selesaikan verifikasi captcha.');
+      return;
+    }
     if (email === 'admin@gmail.com' && password === 'admin123') {
       setError('');
-      localStorage.setItem('isAuthenticated', 'true');
+      if (rememberMe) {
+        localStorage.setItem('isAuthenticated', 'true');
+      } else {
+        sessionStorage.setItem('isAuthenticated', 'true');
+      }
       navigate('/dashboard');
     } else {
       setError('Email atau password salah');
@@ -155,6 +173,29 @@ const Login = () => {
                         {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                       </button>
                     </div>
+                  </div>
+
+                  <div className="flex items-center">
+                    <input
+                      id="remember-me"
+                      name="remember-me"
+                      type="checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      className="h-4 w-4 rounded border-gray-300 text-brand-yellow focus:ring-brand-yellow"
+                    />
+                    <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-600">
+                      Ingat Saya
+                    </label>
+                  </div>
+
+                  <div className="flex justify-center my-4">
+                    <Turnstile
+                      siteKey="0x4AAAAAADUi0iOB4TrrBC1B"
+                      onSuccess={() => setIsCaptchaVerified(true)}
+                      onError={() => setIsCaptchaVerified(false)}
+                      onExpire={() => setIsCaptchaVerified(false)}
+                    />
                   </div>
 
                   <button

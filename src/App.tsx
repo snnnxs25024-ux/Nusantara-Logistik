@@ -806,7 +806,7 @@ const AppContent = () => {
     setLoading(false);
     // In PWA, auto navigate after splash screen
     if (isPWA) {
-      const isAuth = localStorage.getItem('isAuthenticated') === 'true';
+      const isAuth = localStorage.getItem('isAuthenticated') === 'true' || sessionStorage.getItem('isAuthenticated') === 'true';
       if (isAuth) {
         navigate('/dashboard', { replace: true });
       } else {

@@ -99,6 +99,7 @@ const Dashboard = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('isAuthenticated');
+    sessionStorage.removeItem('isAuthenticated');
     navigate('/login');
   };
 
