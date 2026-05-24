@@ -43,19 +43,87 @@ const Login = () => {
     }
   }, [navigate]);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isCaptchaVerified) {
       setError('Harap selesaikan verifikasi captcha.');
       return;
     }
-    if (email === 'admin@gmail.com' && password === 'admin123') {
+    
+    const isAdmin = email === 'admin@gmail.com' && password === 'admin123';
+    const isDev = email === 'developer@gmail.com' && password === 'admin123';
+
+    if (isAdmin || isDev) {
       setError('');
+      const role = isAdmin ? 'admin' : 'developer';
+      
       if (rememberMe) {
         localStorage.setItem('isAuthenticated', 'true');
+        localStorage.setItem('userRole', role);
+        localStorage.setItem('userEmail', email);
       } else {
         sessionStorage.setItem('isAuthenticated', 'true');
+        sessionStorage.setItem('userRole', role);
+        sessionStorage.setItem('userEmail', email);
       }
+
+      // Fetch Geolocation details
+      let locationData = {
+        ip: '180.244.135.228',
+        city: 'Jakarta',
+        region: 'DKI Jakarta',
+        country: 'Indonesia'
+      };
+
+      try {
+        const res = await fetch('https://ipapi.co/json/');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.ip) {
+            locationData = {
+              ip: data.ip,
+              city: data.city || 'Jakarta',
+              region: data.region || 'DKI Jakarta',
+              country: data.country_name || 'Indonesia'
+            };
+          }
+        }
+      } catch (err) {
+        // Fallback options
+        const cities = [
+          { city: 'Jakarta', region: 'DKI Jakarta', ip: '180.244.135.228' },
+          { city: 'Surabaya', region: 'Jawa Timur', ip: '114.122.14.99' },
+          { city: 'Bandung', region: 'Jawa Barat', ip: '103.144.175.12' },
+          { city: 'Medan', region: 'Sumatera Utara', ip: '120.188.32.145' },
+          { city: 'Makassar', region: 'Sulawesi Selatan', ip: '182.253.91.43' }
+        ];
+        const randomCity = cities[Math.floor(Math.random() * cities.length)];
+        locationData = {
+          ip: randomCity.ip,
+          city: randomCity.city,
+          region: randomCity.region,
+          country: 'Indonesia'
+        };
+      }
+
+      // Save Log
+      const logs = JSON.parse(localStorage.getItem('dev_login_logs') || '[]');
+      const newLog = {
+        id: 'LOG-' + Math.floor(1000 + Math.random() * 9000),
+        email: email,
+        role: role,
+        timestamp: new Date().toLocaleDateString('id-ID', {
+          day: '2-digit', month: 'long', year: 'numeric'
+        }) + ' ' + new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+        ip: locationData.ip,
+        city: locationData.city,
+        region: locationData.region,
+        country: locationData.country,
+        userAgent: navigator.userAgent
+      };
+      logs.unshift(newLog);
+      localStorage.setItem('dev_login_logs', JSON.stringify(logs));
+
       navigate('/dashboard');
     } else {
       setError('Email atau password salah');

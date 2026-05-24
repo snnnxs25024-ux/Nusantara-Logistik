@@ -13,6 +13,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
+import { DeveloperConsole } from './components/DeveloperConsole';
 
 const deliveryData = [
   { name: 'Sen', volume: 120, revenue: 45 },
@@ -32,6 +33,8 @@ const resentShipments = [
 ];
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+  const [role, setRole] = useState<'admin' | 'developer' | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isDocsOpen, setIsDocsOpen] = useState(false);
@@ -77,6 +80,16 @@ const Dashboard = () => {
     localStorage.setItem('tribuana_docs', JSON.stringify(activeDocs));
   }, [activeDocs]);
 
+  useEffect(() => {
+    const isAuth = localStorage.getItem('isAuthenticated') === 'true' || sessionStorage.getItem('isAuthenticated') === 'true';
+    if (!isAuth) {
+      navigate('/login', { replace: true });
+    } else {
+      const userRole = localStorage.getItem('userRole') || sessionStorage.getItem('userRole') || 'admin';
+      setRole(userRole as 'admin' | 'developer');
+    }
+  }, [navigate]);
+
   const showNotification = (message: string, type: 'success'|'error' = 'success') => {
     setNotification({ show: true, message, type });
     setTimeout(() => {
@@ -95,7 +108,6 @@ const Dashboard = () => {
   const [isExporting, setIsExporting] = useState<string | null>(null);
   const [selectedFleet, setSelectedFleet] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const navigate = useNavigate();
 
   const handleLogout = () => {
     localStorage.removeItem('isAuthenticated');
@@ -1214,6 +1226,19 @@ const Dashboard = () => {
         return null;
     }
   };
+
+  if (role === null) {
+    return (
+      <div className="min-h-screen bg-neutral-950 flex flex-col items-center justify-center font-mono text-neutral-100">
+        <RefreshCw className="w-8 h-8 text-emerald-400 animate-spin mb-4" />
+        <span className="text-xs text-neutral-400 uppercase tracking-widest">Sesi Autentikasi Sedang Dimuat...</span>
+      </div>
+    );
+  }
+
+  if (role === 'developer') {
+    return <DeveloperConsole handleLogout={handleLogout} />;
+  }
 
   return (
     <div className="min-h-screen bg-soft-gray flex">
